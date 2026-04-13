@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-surface:        #ffffff;
+  --color-surface-subtle: #f9fafb;
+  --color-surface-muted:  #f3f4f6;
+  --color-ink:            #111827;
+  --color-ink-secondary:  #374151;
+  --color-ink-tertiary:   #6b7280;
+  --color-ink-disabled:   #9ca3af;
+  --color-ink-inverse:    #ffffff;
+  --color-line:           #e5e7eb;
+  --color-line-subtle:    #f3f4f6;
+}
+
+.dark {
+  --color-surface:        #1e293b;
+  --color-surface-subtle: #0f172a;
+  --color-surface-muted:  #334155;
+  --color-ink:            #f1f5f9;
+  --color-ink-secondary:  #cbd5e1;
+  --color-ink-tertiary:   #94a3b8;
+  --color-ink-disabled:   #64748b;
+  --color-ink-inverse:    #0f172a;
+  --color-line:           #334155;
+  --color-line-subtle:    #1e293b;
+}
+
+@layer base {
+  html, body {
+    @apply text-ink bg-surface-subtle;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  * { @apply box-border; }
+
+  ::-webkit-scrollbar        { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track  { background: transparent; }
+  ::-webkit-scrollbar-thumb  { @apply bg-line rounded-full; }
+}
+
+@layer components {
+
+  /* ── Surfaces ── */
+  .card {
+    @apply bg-surface rounded-xl border border-line p-5 shadow-xs;
+  }
+  .card-interactive {
+    @apply bg-surface rounded-xl border border-line p-5 shadow-xs
+           hover:shadow-card-hover hover:border-line
+           transition-all duration-200 cursor-pointer;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-1.5 font-medium
+           rounded-lg text-sm px-3.5 py-2 transition-all duration-150
+           disabled:opacity-40 disabled:cursor-not-allowed
+           focus-visible:outline-none focus-visible:ring-2
+           focus-visible:ring-brand-500 focus-visible:ring-offset-1;
+  }
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700
+           active:bg-brand-800 shadow-xs;
+  }
+  .btn-secondary {
+    @apply btn bg-surface text-ink-secondary border border-line
+           hover:bg-surface-muted hover:text-ink active:bg-surface-subtle;
+  }
+  .btn-ghost {
+    @apply btn text-ink-tertiary hover:bg-surface-muted
+           hover:text-ink-secondary;
+  }
+  .btn-danger {
+    @apply btn text-red-600 hover:bg-red-50 hover:text-red-700;
+  }
+  .btn-lg {
+    @apply text-base px-5 py-2.5 rounded-xl;
+  }
+  .btn-sm {
+    @apply text-xs px-2.5 py-1.5 rounded-md;
+  }
+
+  /* ── Form fields ── */
+  .field-label {
+    @apply block text-sm font-medium text-ink-secondary mb-1;
+  }
+  .field-input {
+    @apply w-full px-3 py-2 text-sm text-ink bg-surface
+           border border-line rounded-lg
+           placeholder:text-ink-disabled
+           focus:outline-none focus:ring-2 focus:ring-brand-500/20
+           focus:border-brand-500
+           disabled:bg-surface-muted disabled:cursor-not-allowed
+           transition duration-150;
+  }
+  .field-error {
+    @apply flex items-center gap-1.5 text-xs text-red-600 mt-1;
+  }
+
+  /* ── Badges ── */
+  .badge {
+    @apply inline-flex items-center gap-1 text-2xs font-semibold
+           px-2 py-0.5 rounded-full;
+  }
+  .badge-green  { @apply badge bg-emerald-50  text-emerald-700 ring-1 ring-emerald-100; }
+  .badge-yellow { @apply badge bg-amber-50    text-amber-700   ring-1 ring-amber-100; }
+  .badge-red    { @apply badge bg-red-50      text-red-600     ring-1 ring-red-100; }
+  .badge-blue   { @apply badge bg-brand-50    text-brand-700   ring-1 ring-brand-100; }
+  .badge-gray   { @apply badge bg-surface-muted text-ink-tertiary; }
+
+  /* ── Typography helpers ── */
+  .page-title      { @apply text-xl font-semibold text-ink tracking-tight; }
+  .section-heading { @apply text-xs font-semibold text-ink-disabled uppercase tracking-widest; }
+
+  /* ── Animation delays ── */
+  .delay-1 { animation-delay: 60ms; }
+  .delay-2 { animation-delay: 120ms; }
+  .delay-3 { animation-delay: 180ms; }
+  .delay-4 { animation-delay: 240ms; }
+}
