@@ -3,9 +3,13 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
-const WS_URL = typeof window !== "undefined"
-  ? `${window.location.protocol}//${window.location.host}/api`
-  : "/api";
+// WebSocket must connect directly to the backend (not through Next.js proxy,
+// which runs on serverless functions that don't support persistent connections).
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? (
+  typeof window !== "undefined"
+    ? `${window.location.protocol}//${window.location.host}/api`
+    : "/api"
+);
 
 export type MessageRole = "PATIENT" | "ASSISTANT";
 
