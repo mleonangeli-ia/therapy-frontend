@@ -216,16 +216,16 @@ function PasswordForm() {
       <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-3.5">
         <div>
           <label className="field-label">{t.profile.currentPassword}</label>
-          <div className="relative">
+          <div className="flex items-center bg-surface border border-line rounded-lg transition duration-150 focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500">
             <input
               {...register("currentPassword")}
               type={showCurrent ? "text" : "password"}
-              className="field-input pr-10"
+              className="flex-1 px-3 py-2 text-sm text-ink bg-transparent outline-none placeholder:text-ink-disabled min-w-0"
               placeholder="••••••••"
               autoComplete="current-password"
             />
             <button type="button" onClick={() => setShowCurrent(v => !v)}
-              className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
+              className="px-3 self-stretch flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors flex-shrink-0">
               {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
@@ -234,16 +234,16 @@ function PasswordForm() {
 
         <div>
           <label className="field-label">{t.profile.newPassword}</label>
-          <div className="relative">
+          <div className="flex items-center bg-surface border border-line rounded-lg transition duration-150 focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500">
             <input
               {...register("newPassword")}
               type={showNew ? "text" : "password"}
-              className="field-input pr-10"
+              className="flex-1 px-3 py-2 text-sm text-ink bg-transparent outline-none placeholder:text-ink-disabled min-w-0"
               placeholder="••••••••"
               autoComplete="new-password"
             />
             <button type="button" onClick={() => setShowNew(v => !v)}
-              className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
+              className="px-3 self-stretch flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors flex-shrink-0">
               {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
@@ -252,16 +252,16 @@ function PasswordForm() {
 
         <div>
           <label className="field-label">{t.profile.confirmNewPassword}</label>
-          <div className="relative">
+          <div className="flex items-center bg-surface border border-line rounded-lg transition duration-150 focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500">
             <input
               {...register("confirmNewPassword")}
               type={showConfirm ? "text" : "password"}
-              className="field-input pr-10"
+              className="flex-1 px-3 py-2 text-sm text-ink bg-transparent outline-none placeholder:text-ink-disabled min-w-0"
               placeholder="••••••••"
               autoComplete="new-password"
             />
             <button type="button" onClick={() => setShowConfirm(v => !v)}
-              className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
+              className="px-3 self-stretch flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors flex-shrink-0">
               {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
