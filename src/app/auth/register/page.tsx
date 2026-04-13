@@ -130,7 +130,7 @@ export default function RegisterPage() {
               <div className="relative">
                 <input {...register("password")} type={showPassword ? "text" : "password"} className="field-input pr-10" placeholder="••••••••" autoComplete="new-password" />
                 <button type="button" onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-disabled hover:text-ink-tertiary transition-colors">
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
@@ -141,7 +141,7 @@ export default function RegisterPage() {
               <div className="relative">
                 <input {...register("confirmPassword")} type={showConfirm ? "text" : "password"} className="field-input pr-10" placeholder="••••••••" autoComplete="new-password" />
                 <button type="button" onClick={() => setShowConfirm(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-disabled hover:text-ink-tertiary transition-colors">
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
                   {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>

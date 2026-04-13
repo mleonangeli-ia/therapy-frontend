@@ -225,7 +225,7 @@ function PasswordForm() {
               autoComplete="current-password"
             />
             <button type="button" onClick={() => setShowCurrent(v => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-disabled hover:text-ink-tertiary transition-colors">
+              className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
               {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
@@ -243,7 +243,7 @@ function PasswordForm() {
               autoComplete="new-password"
             />
             <button type="button" onClick={() => setShowNew(v => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-disabled hover:text-ink-tertiary transition-colors">
+              className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
               {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
@@ -261,7 +261,7 @@ function PasswordForm() {
               autoComplete="new-password"
             />
             <button type="button" onClick={() => setShowConfirm(v => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-disabled hover:text-ink-tertiary transition-colors">
+              className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
               {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>

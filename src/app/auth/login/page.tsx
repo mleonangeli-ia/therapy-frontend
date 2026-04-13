@@ -116,7 +116,7 @@ export default function LoginPage() {
                 <input {...register("password")} type={showPassword ? "text" : "password"} className="field-input pr-10"
                   placeholder="••••••••" autoComplete="current-password" />
                 <button type="button" onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-disabled hover:text-ink-tertiary transition-colors">
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
