@@ -224,8 +224,12 @@ function PasswordForm() {
               placeholder="••••••••"
               autoComplete="current-password"
             />
-            <button type="button" onClick={() => setShowCurrent(v => !v)}
-              className="px-3 self-stretch flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors flex-shrink-0">
+            <button
+              type="button"
+              onTouchEnd={(e) => { e.preventDefault(); setShowCurrent(v => !v); }}
+              onClick={() => setShowCurrent(v => !v)}
+              className={`px-3 self-stretch flex items-center transition-colors flex-shrink-0 ${showCurrent ? "text-brand-500" : "text-ink-disabled"}`}
+            >
               {showCurrent ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
@@ -242,8 +246,12 @@ function PasswordForm() {
               placeholder="••••••••"
               autoComplete="new-password"
             />
-            <button type="button" onClick={() => setShowNew(v => !v)}
-              className="px-3 self-stretch flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors flex-shrink-0">
+            <button
+              type="button"
+              onTouchEnd={(e) => { e.preventDefault(); setShowNew(v => !v); }}
+              onClick={() => setShowNew(v => !v)}
+              className={`px-3 self-stretch flex items-center transition-colors flex-shrink-0 ${showNew ? "text-brand-500" : "text-ink-disabled"}`}
+            >
               {showNew ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
@@ -260,8 +268,12 @@ function PasswordForm() {
               placeholder="••••••••"
               autoComplete="new-password"
             />
-            <button type="button" onClick={() => setShowConfirm(v => !v)}
-              className="px-3 self-stretch flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors flex-shrink-0">
+            <button
+              type="button"
+              onTouchEnd={(e) => { e.preventDefault(); setShowConfirm(v => !v); }}
+              onClick={() => setShowConfirm(v => !v)}
+              className={`px-3 self-stretch flex items-center transition-colors flex-shrink-0 ${showConfirm ? "text-brand-500" : "text-ink-disabled"}`}
+            >
               {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
