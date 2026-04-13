@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { clearAuth, getPatientName } from "@/lib/auth";
 import api from "@/lib/api";
-import { LayoutDashboard, MessageCircle, Package, FileText, LogOut, Sun, Moon, Loader2 } from "lucide-react";
+import { LayoutDashboard, MessageCircle, Package, FileText, LogOut, Sun, Moon, Loader2, UserCircle } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { useT } from "@/lib/i18n";
 import clsx from "clsx";
@@ -34,6 +34,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { dark, toggle } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const NAV = [
     { href: "/dashboard",          label: t.nav.home,     icon: LayoutDashboard },
@@ -67,9 +69,26 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <button onClick={toggle} className="p-1.5 rounded-lg text-ink-tertiary hover:bg-surface-muted transition-colors">
             {dark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
-          <button onClick={() => setShowLogoutModal(true)} className="p-0.5">
-            <Initials name={name} />
-          </button>
+          <div className="relative" ref={userMenuRef}>
+            <button onClick={() => setShowUserMenu(v => !v)} className="p-0.5">
+              <Initials name={name} />
+            </button>
+            {showUserMenu && (
+              <div className="absolute right-0 top-10 w-44 bg-surface border border-line rounded-xl shadow-card z-50 py-1 animate-fade-in">
+                <Link href="/dashboard/profile" onClick={() => setShowUserMenu(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 text-sm text-ink hover:bg-surface-muted transition-colors">
+                  <UserCircle size={15} className="text-ink-tertiary" />
+                  {lang === "en" ? "My profile" : "Mi perfil"}
+                </Link>
+                <div className="border-t border-line my-1" />
+                <button onClick={() => { setShowUserMenu(false); setShowLogoutModal(true); }}
+                  className="flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 w-full transition-colors">
+                  <LogOut size={15} />
+                  {t.nav.logout}
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -139,6 +158,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             </button>
           </div>
 
+          <Link href="/dashboard/profile"
+            className="flex items-center gap-2.5 px-2.5 py-1.5 w-full rounded-lg text-xs text-ink-tertiary hover:bg-surface-muted hover:text-ink-secondary transition-colors">
+            <UserCircle size={13} />
+            {lang === "en" ? "My profile" : "Mi perfil"}
+          </Link>
           <button
             onClick={toggle}
             className="flex items-center gap-2.5 px-2.5 py-1.5 w-full rounded-lg text-xs text-ink-tertiary hover:bg-surface-muted hover:text-ink-secondary transition-colors"
