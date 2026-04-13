@@ -99,6 +99,9 @@
   .field-error {
     @apply flex items-center gap-1.5 text-xs text-red-600 mt-1;
   }
+  .pw-mask {
+    -webkit-text-security: disc;
+  }
 
   /* ── Badges ── */
   .badge {

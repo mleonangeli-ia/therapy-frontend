@@ -213,33 +213,19 @@ function PasswordForm() {
         <h2 className="text-sm font-semibold text-ink">{t.profile.security}</h2>
       </div>
 
-      {/* DEBUG - borrar después */}
-      <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-3 text-xs space-y-1">
-        <p>showCurrent: <strong>{String(showCurrent)}</strong></p>
-        <p>showNew: <strong>{String(showNew)}</strong></p>
-        <div
-          role="button"
-          onClick={() => setShowCurrent(v => !v)}
-          className="mt-1 bg-blue-500 text-white px-2 py-1 rounded cursor-pointer inline-block"
-        >
-          Toggle (div, fuera del form)
-        </div>
-      </div>
-
       <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="space-y-3.5">
         <div>
           <label className="field-label">{t.profile.currentPassword}</label>
           <div className="flex items-center bg-surface border border-line rounded-lg transition duration-150 focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500">
             <input
               {...register("currentPassword")}
-              type={showCurrent ? "text" : "password"}
-              className="flex-1 px-3 py-2 text-sm text-ink bg-transparent outline-none placeholder:text-ink-disabled min-w-0"
+              type="text"
+              className={`flex-1 px-3 py-2 text-sm text-ink bg-transparent outline-none placeholder:text-ink-disabled min-w-0${showCurrent ? "" : " pw-mask"}`}
               placeholder="••••••••"
               autoComplete="current-password"
             />
             <button
               type="button"
-              onTouchEnd={(e) => { e.preventDefault(); setShowCurrent(v => !v); }}
               onClick={() => setShowCurrent(v => !v)}
               className={`px-3 self-stretch flex items-center transition-colors flex-shrink-0 ${showCurrent ? "text-brand-500" : "text-ink-disabled"}`}
             >
@@ -254,14 +240,13 @@ function PasswordForm() {
           <div className="flex items-center bg-surface border border-line rounded-lg transition duration-150 focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500">
             <input
               {...register("newPassword")}
-              type={showNew ? "text" : "password"}
-              className="flex-1 px-3 py-2 text-sm text-ink bg-transparent outline-none placeholder:text-ink-disabled min-w-0"
+              type="text"
+              className={`flex-1 px-3 py-2 text-sm text-ink bg-transparent outline-none placeholder:text-ink-disabled min-w-0${showNew ? "" : " pw-mask"}`}
               placeholder="••••••••"
               autoComplete="new-password"
             />
             <button
               type="button"
-              onTouchEnd={(e) => { e.preventDefault(); setShowNew(v => !v); }}
               onClick={() => setShowNew(v => !v)}
               className={`px-3 self-stretch flex items-center transition-colors flex-shrink-0 ${showNew ? "text-brand-500" : "text-ink-disabled"}`}
             >
@@ -276,14 +261,13 @@ function PasswordForm() {
           <div className="flex items-center bg-surface border border-line rounded-lg transition duration-150 focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500">
             <input
               {...register("confirmNewPassword")}
-              type={showConfirm ? "text" : "password"}
-              className="flex-1 px-3 py-2 text-sm text-ink bg-transparent outline-none placeholder:text-ink-disabled min-w-0"
+              type="text"
+              className={`flex-1 px-3 py-2 text-sm text-ink bg-transparent outline-none placeholder:text-ink-disabled min-w-0${showConfirm ? "" : " pw-mask"}`}
               placeholder="••••••••"
               autoComplete="new-password"
             />
             <button
               type="button"
-              onTouchEnd={(e) => { e.preventDefault(); setShowConfirm(v => !v); }}
               onClick={() => setShowConfirm(v => !v)}
               className={`px-3 self-stretch flex items-center transition-colors flex-shrink-0 ${showConfirm ? "text-brand-500" : "text-ink-disabled"}`}
             >
