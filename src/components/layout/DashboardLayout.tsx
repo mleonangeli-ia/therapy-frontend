@@ -18,6 +18,14 @@ function Initials({ name }: { name: string }) {
   );
 }
 
+const Logo = () => (
+  <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center flex-shrink-0">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  </div>
+);
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router   = useRouter();
@@ -49,15 +57,27 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen bg-surface-subtle">
-      {/* ── Sidebar ── */}
-      <aside className="w-56 fixed inset-y-0 flex flex-col bg-surface border-r border-line z-20">
+      {/* ── Mobile top bar ── */}
+      <div className="lg:hidden fixed top-0 inset-x-0 h-14 z-30 bg-surface border-b border-line flex items-center justify-between px-4">
+        <div className="flex items-center gap-2">
+          <Logo />
+          <span className="font-semibold text-ink text-sm">TherapyAI</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={toggle} className="p-1.5 rounded-lg text-ink-tertiary hover:bg-surface-muted transition-colors">
+            {dark ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+          <button onClick={() => setShowLogoutModal(true)} className="p-0.5">
+            <Initials name={name} />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Desktop sidebar ── */}
+      <aside className="hidden lg:flex w-56 fixed inset-y-0 flex-col bg-surface border-r border-line z-20">
         {/* Logo */}
         <div className="h-14 flex items-center gap-2 px-4 border-b border-line flex-shrink-0">
-          <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-          </div>
+          <Logo />
           <span className="font-semibold text-ink text-sm">TherapyAI</span>
         </div>
 
@@ -137,11 +157,33 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ── Main ── */}
-      <main className="flex-1 ml-56 min-h-screen flex flex-col">
-        <div className="flex-1 px-8 py-8 animate-fade-in max-w-4xl w-full">
+      <main className="flex-1 lg:ml-56 min-h-screen flex flex-col">
+        <div className="flex-1 px-4 pt-[4.25rem] pb-[5rem] lg:px-8 lg:py-8 lg:pt-8 lg:pb-8 animate-fade-in max-w-4xl w-full">
           {children}
         </div>
       </main>
+
+      {/* ── Mobile bottom nav ── */}
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-line flex safe-bottom">
+        {NAV.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={clsx(
+                "flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors",
+                active ? "text-brand-600" : "text-ink-disabled"
+              )}
+            >
+              <Icon size={21} strokeWidth={active ? 2.5 : 1.75} />
+              <span className={clsx("text-[9px] font-medium", active ? "text-brand-600" : "text-ink-disabled")}>
+                {label}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
 
       {/* ── Logout confirmation modal ── */}
       {showLogoutModal && (

@@ -3,7 +3,9 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
-const WS_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+const WS_URL = typeof window !== "undefined"
+  ? `${window.location.protocol}//${window.location.host}/api`
+  : "/api";
 
 export type MessageRole = "PATIENT" | "ASSISTANT";
 

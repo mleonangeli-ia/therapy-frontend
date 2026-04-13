@@ -6,8 +6,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import axios, { AxiosError } from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
-const rawApi = axios.create({ baseURL: API_URL });
+const rawApi = axios.create({ baseURL: "/api" });
 import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff, Stethoscope } from "lucide-react";
 import { useState } from "react";
 

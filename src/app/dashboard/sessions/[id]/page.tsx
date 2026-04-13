@@ -154,10 +154,10 @@ export default function ActiveSessionPage({ params }: Props) {
   }[status];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] -m-8 bg-surface-subtle">
+    <div className="flex flex-col fixed inset-x-0 top-14 bottom-16 bg-surface-subtle lg:static lg:h-[calc(100vh-4rem)] lg:-m-8">
       {/* Header */}
       <div className="flex-shrink-0">
-        <div className="flex items-center justify-between px-6 h-14 bg-surface border-b border-line">
+        <div className="flex items-center justify-between px-4 lg:px-6 h-14 bg-surface border-b border-line">
           <div className="flex items-center gap-3">
             <div className="w-7 h-7 rounded-lg bg-brand-50 flex items-center justify-center text-brand-700 font-bold text-xs">
               {sessionData?.sessionNumber ?? "·"}
@@ -176,7 +176,7 @@ export default function ActiveSessionPage({ params }: Props) {
           {timerActive && (
             <div className="flex flex-col items-center gap-0.5">
               <div className={clsx(
-                "flex items-center gap-1.5 text-lg font-mono font-semibold tabular-nums transition-colors",
+                "flex items-center gap-1 text-base lg:text-lg font-mono font-semibold tabular-nums transition-colors",
                 timer.overtime
                   ? "text-red-500"
                   : timer.remaining <= 5 * 60
@@ -185,10 +185,10 @@ export default function ActiveSessionPage({ params }: Props) {
                   ? "text-amber-500"
                   : "text-ink"
               )}>
-                <Clock size={15} className={timer.remaining <= 5 * 60 ? "animate-pulse" : ""} />
+                <Clock size={13} className={timer.remaining <= 5 * 60 ? "animate-pulse" : ""} />
                 {timer.display}
               </div>
-              <div className="w-24 h-0.5 rounded-full bg-line overflow-hidden">
+              <div className="w-16 lg:w-24 h-0.5 rounded-full bg-line overflow-hidden">
                 <div
                   className={clsx(
                     "h-full rounded-full transition-all",
@@ -200,9 +200,6 @@ export default function ActiveSessionPage({ params }: Props) {
                   style={{ width: `${(1 - timer.pct) * 100}%` }}
                 />
               </div>
-              <span className="text-[10px] text-ink-disabled leading-none">
-                {timer.overtime ? "+" : t.sessionChat.remaining}
-              </span>
             </div>
           )}
 
@@ -247,7 +244,7 @@ export default function ActiveSessionPage({ params }: Props) {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto px-6 py-5 space-y-3 bg-surface-subtle">
+      <div className="flex-1 overflow-y-auto px-4 lg:px-6 py-4 lg:py-5 space-y-3 bg-surface-subtle">
         {allMessages.length === 0 && isConnected && (
           <div className="flex flex-col items-center justify-center py-24 text-center animate-fade-in">
             <div className="w-10 h-10 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center mb-4">
@@ -265,7 +262,7 @@ export default function ActiveSessionPage({ params }: Props) {
         <div ref={bottomRef} />
       </div>
 
-      <div className="px-6 py-3 bg-surface border-t border-line flex-shrink-0">
+      <div className="px-4 lg:px-6 py-3 bg-surface border-t border-line flex-shrink-0">
         {sessionData?.modality !== "TEXT" ? (
           <div className="flex items-center gap-3">
             <AudioRecorder

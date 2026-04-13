@@ -42,14 +42,14 @@ function ReportsContent() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="page-title">{t.reports.title}</h1>
-          <p className="text-ink-tertiary mt-1">{t.reports.subtitle}</p>
+          <p className="text-ink-tertiary mt-1 text-sm">{t.reports.subtitle}</p>
         </div>
-        <button onClick={() => refetch()} className="btn btn-secondary btn-sm">
+        <button onClick={() => refetch()} className="btn btn-secondary btn-sm flex-shrink-0">
           <RefreshCw size={13} />
-          {t.reports.refresh}
+          <span className="hidden sm:inline">{t.reports.refresh}</span>
         </button>
       </div>
 
@@ -121,52 +121,54 @@ function ReportCard({
   }[report.status];
 
   return (
-    <div className={clsx("card flex items-center justify-between", highlighted && "border-brand-200 bg-brand-50/30")}>
-      <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-xl bg-surface-subtle border border-line flex items-center justify-center flex-shrink-0">
-          <FileText size={18} className="text-ink-disabled" />
-        </div>
-        <div>
-          <p className="font-medium text-ink text-sm">
-            {t.reports.session} {report.sessionNumber}
-          </p>
-          {report.generatedAt && (
-            <p className="text-xs text-ink-tertiary mt-0.5">
-              {format(new Date(report.generatedAt), "d MMM yyyy · HH:mm", { locale: dateLocale })}
+    <div className={clsx("card", highlighted && "border-brand-200 bg-brand-50/30")}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-surface-subtle border border-line flex items-center justify-center flex-shrink-0 mt-0.5">
+            <FileText size={18} className="text-ink-disabled" />
+          </div>
+          <div>
+            <p className="font-medium text-ink text-sm">
+              {t.reports.session} {report.sessionNumber}
             </p>
-          )}
-          {report.downloadCount > 0 && (
-            <p className="text-xs text-ink-disabled mt-0.5">
-              {t.reports.downloaded} {report.downloadCount}{" "}
-              {report.downloadCount === 1 ? t.reports.downloadedOnce : t.reports.downloadedMany}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <span className={clsx("badge", statusConfig?.color)}>
-          {statusConfig?.label}
-        </span>
-
-        {report.status === "COMPLETED" ? (
-          <button
-            onClick={onDownload}
-            disabled={isDownloading}
-            className="btn btn-primary btn-sm"
-          >
-            {isDownloading ? (
-              <Loader2 size={13} className="animate-spin" />
-            ) : (
-              <Download size={13} />
+            {report.generatedAt && (
+              <p className="text-xs text-ink-tertiary mt-0.5">
+                {format(new Date(report.generatedAt), "d MMM yyyy · HH:mm", { locale: dateLocale })}
+              </p>
             )}
-            {isDownloading ? t.reports.downloading : t.reports.download}
-          </button>
-        ) : report.status === "FAILED" ? (
-          <button onClick={onGenerate} className="btn btn-secondary btn-sm">
-            {t.reports.retry}
-          </button>
-        ) : null}
+            {report.downloadCount > 0 && (
+              <p className="text-xs text-ink-disabled mt-0.5">
+                {t.reports.downloaded} {report.downloadCount}{" "}
+                {report.downloadCount === 1 ? t.reports.downloadedOnce : t.reports.downloadedMany}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 flex-shrink-0">
+          <span className={clsx("badge", statusConfig?.color)}>
+            {statusConfig?.label}
+          </span>
+
+          {report.status === "COMPLETED" ? (
+            <button
+              onClick={onDownload}
+              disabled={isDownloading}
+              className="btn btn-primary btn-sm"
+            >
+              {isDownloading ? (
+                <Loader2 size={13} className="animate-spin" />
+              ) : (
+                <Download size={13} />
+              )}
+              <span className="hidden sm:inline">{isDownloading ? t.reports.downloading : t.reports.download}</span>
+            </button>
+          ) : report.status === "FAILED" ? (
+            <button onClick={onGenerate} className="btn btn-secondary btn-sm">
+              {t.reports.retry}
+            </button>
+          ) : null}
+        </div>
       </div>
     </div>
   );

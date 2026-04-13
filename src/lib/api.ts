@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+const API_URL = "/api";
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -26,7 +26,7 @@ function doRefresh(): Promise<string> {
   refreshPromise = (async () => {
     const refreshToken = localStorage.getItem("refresh_token");
     if (!refreshToken) throw new Error("No refresh token");
-    const { data } = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+    const { data } = await axios.post(`/api/auth/refresh`, { refreshToken });
     localStorage.setItem("access_token", data.accessToken);
     localStorage.setItem("refresh_token", data.refreshToken);
     return data.accessToken as string;
@@ -42,7 +42,8 @@ api.interceptors.response.use(
   (res) => res,
   async (error: AxiosError) => {
     const original = error.config as typeof error.config & { _retry?: boolean };
-    if (error.response?.status === 401 && !original._retry) {
+    const isAuthEndpoint = original.url?.includes("/auth/login") || original.url?.includes("/auth/register") || original.url?.includes("/auth/refresh");
+    if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
       original._retry = true;
       try {
         const newToken = await doRefresh();

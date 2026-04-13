@@ -38,12 +38,23 @@ export default function RegisterPage() {
   const { register, handleSubmit, formState: { errors } } =
     useForm<FormData>({ resolver: zodResolver(schema) });
 
+  const [anyError, setAnyError] = useState<string | null>(null);
   const mutation = useMutation({
     mutationFn: (data: Omit<FormData, "confirmPassword">) =>
       api.post<AuthResponse>("/auth/register", data).then((r) => r.data),
     onSuccess: (data) => {
+      setAnyError(null);
       saveAuth(data);
       router.push(data.consentRequired ? "/auth/consent" : "/dashboard");
+    },
+    onError: (error: unknown) => {
+      if (error instanceof AxiosError) {
+        setAnyError(error.response?.data?.message || error.message || "Error al registrarse");
+      } else if (error instanceof Error) {
+        setAnyError(error.message);
+      } else {
+        setAnyError("Error desconocido");
+      }
     },
   });
 
@@ -137,9 +148,9 @@ export default function RegisterPage() {
               {errors.confirmPassword && <p className="field-error"><AlertCircle size={11} />{errors.confirmPassword.message}</p>}
             </div>
 
-            {serverError && (
+            {(serverError || anyError) && (
               <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2.5">
-                <AlertCircle size={13} className="flex-shrink-0" />{serverError}
+                <AlertCircle size={13} className="flex-shrink-0" />{serverError || anyError}
               </div>
             )}
 

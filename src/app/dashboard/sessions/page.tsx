@@ -21,20 +21,20 @@ export default function SessionsPage() {
 
   return (
     <div className="max-w-3xl space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-ink">{t.sessions.title}</h1>
-          <p className="text-ink-tertiary mt-1">{t.sessions.subtitle}</p>
+          <p className="text-ink-tertiary mt-1 text-sm">{t.sessions.subtitle}</p>
         </div>
         {inProgress ? (
-          <Link href={`/dashboard/sessions/${inProgress.id}`} className="btn-primary flex items-center gap-2">
-            <PlayCircle size={18} />
-            {t.sessions.resume}
+          <Link href={`/dashboard/sessions/${inProgress.id}`} className="btn-primary flex items-center gap-2 flex-shrink-0">
+            <PlayCircle size={16} />
+            <span className="hidden sm:inline">{t.sessions.resume}</span>
           </Link>
         ) : (
-          <Link href="/dashboard/sessions/new" className="btn-primary flex items-center gap-2">
-            <Plus size={18} />
-            {t.sessions.newSession}
+          <Link href="/dashboard/sessions/new" className="btn-primary flex items-center gap-2 flex-shrink-0">
+            <Plus size={16} />
+            <span className="hidden sm:inline">{t.sessions.newSession}</span>
           </Link>
         )}
       </div>
@@ -116,84 +116,83 @@ function SessionCard({ session, lang, t }: { session: Session; lang: string; t: 
 
   return (
     <div className="card border transition-colors">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center">
-            <span className="font-bold text-brand-600">{session.sessionNumber}</span>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              {editing ? (
-                <div className="flex items-center gap-1">
-                  <input
-                    ref={inputRef}
-                    value={titleInput}
-                    onChange={(e) => setTitleInput(e.target.value.slice(0, 30))}
-                    onKeyDown={(e) => { if (e.key === "Enter") saveTitle(); if (e.key === "Escape") cancelEdit(); }}
-                    className="text-sm font-medium text-black border border-brand-400 rounded-lg px-2 py-0.5 w-48 focus:outline-none focus:ring-2 focus:ring-brand-300"
-                    placeholder={`${t.sessions.session} ${session.sessionNumber}`}
-                    maxLength={30}
-                  />
-                  <button onClick={saveTitle} disabled={saving} className="text-green-600 hover:text-green-700">
-                    {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
-                  </button>
-                  <button onClick={cancelEdit} className="text-ink-disabled hover:text-ink-tertiary">
-                    <X size={14} />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  onClick={() => setEditing(true)}
-                  className="flex items-center gap-1.5 group"
-                >
-                  <p className="font-medium text-ink">
-                    {session.title || `${t.sessions.session} ${session.sessionNumber}`}
-                  </p>
-                  <Pencil size={12} className="text-ink-disabled opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-              )}
-              <span className={clsx("text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1", statusColor)}>
-                <StatusIcon size={11} />
-                {statusLabel}
-              </span>
-            </div>
-            <p className="text-xs text-ink-tertiary mt-0.5">
-              {format(new Date(session.startedAt), "EEEE d 'de' MMM yyyy · HH:mm", { locale })}
-              {session.durationSeconds && (
-                <> · {Math.round(session.durationSeconds / 60)} {t.sessions.min}</>
-              )}
-            </p>
-          </div>
+      <div className="flex items-start gap-3">
+        <div className="w-11 h-11 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <span className="font-bold text-brand-600">{session.sessionNumber}</span>
         </div>
+        <div className="flex-1 min-w-0">
+          {/* Title row */}
+          <div className="flex flex-wrap items-center gap-2 mb-0.5">
+            {editing ? (
+              <div className="flex items-center gap-1 flex-1 min-w-0">
+                <input
+                  ref={inputRef}
+                  value={titleInput}
+                  onChange={(e) => setTitleInput(e.target.value.slice(0, 30))}
+                  onKeyDown={(e) => { if (e.key === "Enter") saveTitle(); if (e.key === "Escape") cancelEdit(); }}
+                  className="text-sm font-medium text-black border border-brand-400 rounded-lg px-2 py-0.5 w-full max-w-[14rem] focus:outline-none focus:ring-2 focus:ring-brand-300"
+                  placeholder={`${t.sessions.session} ${session.sessionNumber}`}
+                  maxLength={30}
+                />
+                <button onClick={saveTitle} disabled={saving} className="text-green-600 hover:text-green-700 flex-shrink-0">
+                  {saving ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                </button>
+                <button onClick={cancelEdit} className="text-ink-disabled hover:text-ink-tertiary flex-shrink-0">
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 group min-w-0">
+                <p className="font-medium text-ink truncate">
+                  {session.title || `${t.sessions.session} ${session.sessionNumber}`}
+                </p>
+                <Pencil size={12} className="text-ink-disabled opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+              </button>
+            )}
+            <span className={clsx("text-xs px-2 py-0.5 rounded-full font-medium flex items-center gap-1 flex-shrink-0", statusColor)}>
+              <StatusIcon size={11} />
+              {statusLabel}
+            </span>
+          </div>
 
-        <div className="flex items-center gap-3">
-          {session.moodStart && session.moodEnd && (
-            <div className="flex items-center gap-1.5 text-sm">
-              <span title={`Inicio: ${session.moodStart}`}>{MOOD_EMOJI[session.moodStart]}</span>
-              <span className={clsx("text-xs font-medium",
-                moodDelta! > 0 ? "text-green-600"
-                : moodDelta! < 0 ? "text-red-500"
-                : "text-ink-disabled"
-              )}>
-                {moodDelta! > 0 ? "↑" : moodDelta! < 0 ? "↓" : "→"}
-              </span>
-              <span title={`Fin: ${session.moodEnd}`}>{MOOD_EMOJI[session.moodEnd]}</span>
-            </div>
-          )}
+          {/* Date row */}
+          <p className="text-xs text-ink-tertiary">
+            {format(new Date(session.startedAt), "d MMM yyyy · HH:mm", { locale })}
+            {session.durationSeconds && (
+              <> · {Math.round(session.durationSeconds / 60)} {t.sessions.min}</>
+            )}
+          </p>
 
-          {isInProgress ? (
-            <Link href={`/dashboard/sessions/${session.id}`}
-              className="btn-primary text-sm py-1.5 px-3 flex items-center gap-1">
-              <PlayCircle size={14} />
-              {t.sessions.continue}
-            </Link>
-          ) : isCompleted ? (
-            <Link href={`/dashboard/reports?session=${session.id}`}
-              className="btn-secondary text-sm py-1.5 px-3 flex items-center gap-1">
-              <FileText size={14} />
-              {t.sessions.report}
-            </Link>
-          ) : null}
+          {/* Mood + action */}
+          <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
+            {session.moodStart && session.moodEnd ? (
+              <div className="flex items-center gap-1.5 text-sm">
+                <span title={`Inicio: ${session.moodStart}`}>{MOOD_EMOJI[session.moodStart]}</span>
+                <span className={clsx("text-xs font-medium",
+                  moodDelta! > 0 ? "text-green-600"
+                  : moodDelta! < 0 ? "text-red-500"
+                  : "text-ink-disabled"
+                )}>
+                  {moodDelta! > 0 ? "↑" : moodDelta! < 0 ? "↓" : "→"}
+                </span>
+                <span title={`Fin: ${session.moodEnd}`}>{MOOD_EMOJI[session.moodEnd]}</span>
+              </div>
+            ) : <div />}
+
+            {isInProgress ? (
+              <Link href={`/dashboard/sessions/${session.id}`}
+                className="btn-primary text-sm py-1.5 px-3 flex items-center gap-1">
+                <PlayCircle size={14} />
+                {t.sessions.continue}
+              </Link>
+            ) : isCompleted ? (
+              <Link href={`/dashboard/reports?session=${session.id}`}
+                className="btn-secondary text-sm py-1.5 px-3 flex items-center gap-1">
+                <FileText size={14} />
+                {t.sessions.report}
+              </Link>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

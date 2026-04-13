@@ -28,12 +28,23 @@ export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } =
     useForm<FormData>({ resolver: zodResolver(schema) });
 
+  const [anyError, setAnyError] = useState<string | null>(null);
   const mutation = useMutation({
     mutationFn: (data: FormData) =>
       api.post<AuthResponse>("/auth/login", data).then((r) => r.data),
     onSuccess: (data) => {
+      setAnyError(null);
       saveAuth(data);
       router.push(data.consentRequired ? "/auth/consent" : "/dashboard");
+    },
+    onError: (error: unknown) => {
+      if (error instanceof AxiosError) {
+        setAnyError(error.response?.data?.message || error.message || "Error al iniciar sesión");
+      } else if (error instanceof Error) {
+        setAnyError(error.message);
+      } else {
+        setAnyError("Error desconocido");
+      }
     },
   });
   const serverError =
@@ -112,9 +123,9 @@ export default function LoginPage() {
               {errors.password && <p className="field-error"><AlertCircle size={11} />{errors.password.message}</p>}
             </div>
 
-            {serverError && (
+            {(serverError || anyError) && (
               <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2.5">
-                <AlertCircle size={13} className="flex-shrink-0" />{serverError}
+                <AlertCircle size={13} className="flex-shrink-0" />{serverError || anyError}
               </div>
             )}
 

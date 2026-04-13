@@ -49,8 +49,8 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6 animate-slide-up">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="page-title">{t.dashboard.greeting}, {firstName}</h1>
           <p className="text-xs text-ink-tertiary mt-0.5 capitalize">
             {today ? format(today, "EEEE d 'de' MMMM", { locale }) : ""}
@@ -58,14 +58,14 @@ export default function DashboardPage() {
         </div>
         {pack && (
           inProgress ? (
-            <Link href={`/dashboard/sessions/${inProgress.id}`} className="btn-primary">
+            <Link href={`/dashboard/sessions/${inProgress.id}`} className="btn-primary flex-shrink-0">
               <PlayCircle size={14} />
-              {t.sessions.resume}
+              <span className="hidden sm:inline">{t.sessions.resume}</span>
             </Link>
           ) : (
-            <Link href="/dashboard/sessions/new" className="btn-primary">
+            <Link href="/dashboard/sessions/new" className="btn-primary flex-shrink-0">
               <Plus size={14} />
-              {t.dashboard.newSession}
+              <span className="hidden sm:inline">{t.dashboard.newSession}</span>
             </Link>
           )
         )}
@@ -110,7 +110,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-3 delay-1 animate-slide-up">
+      <div className="grid grid-cols-3 gap-2 lg:gap-3 delay-1 animate-slide-up">
         <StatCard label={t.dashboard.statCompleted} value={pack?.sessionsUsed ?? 0} />
         <StatCard label={t.dashboard.statAvailable} value={pack?.sessionsRemaining ?? 0} />
         <StatCard label={t.dashboard.statReports}   value={pack?.sessionsUsed ?? 0} />

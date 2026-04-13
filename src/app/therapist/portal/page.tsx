@@ -12,12 +12,10 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
-
 function therapistApi() {
   const token = localStorage.getItem("therapist_token");
   return axios.create({
-    baseURL: API_URL,
+    baseURL: "/api",
     headers: { Authorization: `Bearer ${token}` },
   });
 }
