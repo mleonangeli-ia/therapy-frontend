@@ -7,7 +7,7 @@ import { useState } from "react";
 import api from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import { AxiosError } from "axios";
-import { Loader2, AlertCircle, CheckCircle2, Eye, EyeOff, User, Lock } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Eye, EyeOff, User, Lock, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
 import clsx from "clsx";
@@ -28,15 +28,27 @@ export default function ProfilePage() {
   const locale = lang === "en" ? enUS : es;
   const queryClient = useQueryClient();
 
-  const { data: profile, isLoading } = useQuery<PatientProfile>({
+  const { data: profile, isLoading, isError, refetch } = useQuery<PatientProfile>({
     queryKey: ["profile"],
     queryFn: () => api.get("/patients/me").then((r) => r.data),
   });
 
-  if (isLoading || !profile) {
+  if (isLoading) {
     return (
       <div className="flex justify-center py-20">
         <Loader2 size={28} className="animate-spin text-ink-disabled" />
+      </div>
+    );
+  }
+
+  if (isError || !profile) {
+    return (
+      <div className="flex flex-col items-center gap-3 py-20 text-ink-tertiary">
+        <AlertCircle size={28} className="text-red-400" />
+        <p className="text-sm">{lang === "en" ? "Could not load profile" : "No se pudo cargar el perfil"}</p>
+        <button onClick={() => refetch()} className="flex items-center gap-1.5 text-xs text-brand-600 hover:underline">
+          <RefreshCw size={13} />{lang === "en" ? "Retry" : "Reintentar"}
+        </button>
       </div>
     );
   }
