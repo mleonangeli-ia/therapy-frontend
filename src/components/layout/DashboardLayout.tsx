@@ -60,7 +60,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen bg-surface-subtle">
       {/* ── Mobile top bar ── */}
-      <div className="lg:hidden fixed top-0 inset-x-0 h-14 z-30 bg-surface border-b border-line flex items-center justify-between px-4">
+      <div className="lg:hidden fixed top-0 inset-x-0 z-30 bg-surface border-b border-line safe-top">
+      <div className="h-14 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
           <Logo />
           <span className="font-semibold text-ink text-sm">TherapyAI</span>
@@ -90,6 +91,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             )}
           </div>
         </div>
+      </div>
       </div>
 
       {/* ── Desktop sidebar ── */}
@@ -182,7 +184,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── Main ── */}
       <main className="flex-1 lg:ml-56 min-h-screen flex flex-col">
-        <div className="flex-1 px-4 pt-[4.25rem] pb-[5rem] lg:px-8 lg:py-8 lg:pt-8 lg:pb-8 animate-fade-in max-w-4xl w-full">
+        <div className="flex-1 px-4 pt-main-mobile pb-main-mobile lg:px-8 lg:py-8 lg:pt-8 lg:pb-8 animate-fade-in max-w-4xl w-full">
           {children}
         </div>
       </main>

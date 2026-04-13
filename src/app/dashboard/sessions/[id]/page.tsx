@@ -154,7 +154,7 @@ export default function ActiveSessionPage({ params }: Props) {
   }[status];
 
   return (
-    <div className="flex flex-col fixed inset-x-0 top-14 bottom-16 bg-surface-subtle lg:static lg:h-[calc(100vh-4rem)] lg:-m-8">
+    <div className="flex flex-col fixed inset-x-0 top-topbar bottom-bottomnav bg-surface-subtle lg:static lg:h-[calc(100vh-4rem)] lg:-m-8">
       {/* Header */}
       <div className="flex-shrink-0">
         <div className="flex items-center justify-between px-4 lg:px-6 h-14 bg-surface border-b border-line">
