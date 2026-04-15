@@ -8,6 +8,7 @@ import { es, enUS } from "date-fns/locale";
 import { Check, Loader2, FlaskConical, ShoppingCart, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useT } from "@/lib/i18n";
+import { useCurrency, formatPrice } from "@/hooks/useCurrency";
 
 export default function PacksPage() {
   const queryClient = useQueryClient();
@@ -50,6 +51,7 @@ export default function PacksPage() {
   });
 
   const activePack = myPacks?.find((p) => p.status === "ACTIVE");
+  const currency = useCurrency();
 
   const statusLabel: Record<Pack["status"], string> = {
     PENDING_PAYMENT: t.packs.statusPending,
@@ -160,9 +162,13 @@ export default function PacksPage() {
 
                   <div className="text-right flex-shrink-0">
                     <p className="text-2xl font-bold text-ink">
-                      ${pt.priceAmount.toLocaleString("es-AR")}
+                      {currency.loading ? (
+                        <span className="inline-block w-20 h-7 bg-surface-muted rounded animate-pulse" />
+                      ) : (
+                        formatPrice(pt.priceAmount, currency)
+                      )}
                     </p>
-                    <p className="text-xs text-ink-disabled">{pt.priceCurrency}</p>
+                    <p className="text-xs text-ink-disabled">{currency.loading ? "" : currency.currency}</p>
                     <button
                       onClick={() => mockPurchase.mutate(pt.id)}
                       disabled={mockPurchase.isPending}
