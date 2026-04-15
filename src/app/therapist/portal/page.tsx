@@ -9,7 +9,7 @@ import {
   Users, ChevronRight, LogOut, Stethoscope, Loader2,
   CheckCircle, PlayCircle, Clock, AlertTriangle, FileText,
   ChevronDown, ChevronUp, MessageSquare, BarChart3, TrendingUp,
-  MessageCircle, ShieldAlert,
+  MessageCircle, ShieldAlert, Globe,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -156,6 +156,78 @@ function StatsPanel() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+interface CountryStat {
+  countryCode: string;
+  count: number;
+}
+
+function countryFlag(code: string): string {
+  return code.toUpperCase().replace(/./g, c =>
+    String.fromCodePoint(c.charCodeAt(0) + 127397)
+  );
+}
+
+const COUNTRY_NAMES: Record<string, string> = {
+  AR: "Argentina", US: "Estados Unidos", MX: "México", CO: "Colombia",
+  CL: "Chile", PE: "Perú", BR: "Brasil", ES: "España", UY: "Uruguay",
+  PY: "Paraguay", BO: "Bolivia", VE: "Venezuela", EC: "Ecuador",
+  GT: "Guatemala", HN: "Honduras", SV: "El Salvador", NI: "Nicaragua",
+  CR: "Costa Rica", PA: "Panamá", DO: "República Dominicana",
+  CU: "Cuba", PR: "Puerto Rico", GB: "Reino Unido", DE: "Alemania",
+  FR: "Francia", IT: "Italia", CA: "Canadá", AU: "Australia",
+};
+
+function CountriesPanel() {
+  const { data: countries, isLoading } = useQuery<CountryStat[]>({
+    queryKey: ["therapist", "countries"],
+    queryFn: () => therapistApi().get("/therapist/portal/patients/countries").then(r => r.data),
+    refetchInterval: 60_000,
+  });
+
+  if (isLoading) return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 flex justify-center">
+      <Loader2 size={20} className="animate-spin text-gray-300" />
+    </div>
+  );
+  if (!countries?.length) return null;
+
+  const max = countries[0].count;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <Globe size={15} className="text-blue-600" />
+        <h2 className="text-sm font-semibold text-gray-800">Accesos por país</h2>
+        <span className="ml-auto text-xs text-gray-400">{countries.reduce((a, c) => a + c.count, 0)} pacientes</span>
+      </div>
+
+      <div className="space-y-2.5">
+        {countries.map(({ countryCode, count }) => {
+          const pct = Math.round((count / max) * 100);
+          const name = COUNTRY_NAMES[countryCode] ?? countryCode;
+          return (
+            <div key={countryCode} className="flex items-center gap-3">
+              <span className="text-xl leading-none w-7 flex-shrink-0">{countryFlag(countryCode)}</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-xs font-medium text-gray-700 truncate">{name}</span>
+                  <span className="text-xs text-gray-400 ml-2 flex-shrink-0">{count}</span>
+                </div>
+                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-400 rounded-full transition-all duration-500"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -383,6 +455,7 @@ export default function TherapistPortalPage() {
         ) : (
           <div className="space-y-5">
             <StatsPanel />
+            <CountriesPanel />
 
             <div>
               <h1 className="text-xl font-bold text-gray-900">Mis pacientes</h1>
