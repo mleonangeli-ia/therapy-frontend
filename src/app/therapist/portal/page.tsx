@@ -9,7 +9,7 @@ import {
   Users, ChevronRight, LogOut, Stethoscope, Loader2,
   CheckCircle, PlayCircle, Clock, AlertTriangle, FileText,
   ChevronDown, ChevronUp, MessageSquare, BarChart3, TrendingUp,
-  MessageCircle, ShieldAlert, Globe,
+  MessageCircle, ShieldAlert, Globe, Activity,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -156,6 +156,77 @@ function StatsPanel() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+interface TrafficDay {
+  key: string;
+  total: number;
+  devices: number;
+}
+
+function TrafficPanel() {
+  const { data, isLoading } = useQuery<{ data: TrafficDay[] }>({
+    queryKey: ["therapist", "vercel-traffic"],
+    queryFn: () => fetch("/api/vercel-traffic").then(r => r.json()),
+    refetchInterval: 5 * 60_000,
+  });
+
+  if (isLoading) return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 flex justify-center">
+      <Loader2 size={20} className="animate-spin text-gray-300" />
+    </div>
+  );
+
+  const days = data?.data ?? [];
+  const totalViews = days.reduce((a, d) => a + d.total, 0);
+  const totalDevices = days.reduce((a, d) => a + d.devices, 0);
+  const maxTotal = Math.max(...days.map(d => d.total), 1);
+
+  // Only show last 14 days to keep chart compact
+  const visible = days.slice(-14);
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <Activity size={15} className="text-violet-600" />
+        <h2 className="text-sm font-semibold text-gray-800">Tráfico del sitio</h2>
+        <span className="ml-auto text-xs text-gray-400">últimos 30 días</span>
+      </div>
+
+      <div className="flex gap-6">
+        <div>
+          <p className="text-2xl font-bold text-gray-900">{totalViews.toLocaleString()}</p>
+          <p className="text-xs text-gray-400 mt-0.5">Visitas totales</p>
+        </div>
+        <div>
+          <p className="text-2xl font-bold text-gray-900">{totalDevices.toLocaleString()}</p>
+          <p className="text-xs text-gray-400 mt-0.5">Dispositivos únicos</p>
+        </div>
+      </div>
+
+      {/* Bar chart */}
+      <div className="flex items-end gap-1 h-20">
+        {visible.map((day) => {
+          const heightPct = maxTotal > 0 ? (day.total / maxTotal) * 100 : 0;
+          const label = new Date(day.key + "T12:00:00Z").toLocaleDateString("es", { day: "numeric", month: "short" });
+          return (
+            <div key={day.key} className="flex-1 flex flex-col items-center gap-1 group relative" title={`${label}: ${day.total} visitas`}>
+              <div className="w-full flex items-end justify-center" style={{ height: "64px" }}>
+                <div
+                  className="w-full rounded-t bg-violet-400 group-hover:bg-violet-500 transition-colors"
+                  style={{ height: `${Math.max(heightPct, day.total > 0 ? 4 : 0)}%` }}
+                />
+              </div>
+              <span className="text-[9px] text-gray-300 truncate w-full text-center hidden sm:block">
+                {new Date(day.key + "T12:00:00Z").getDate()}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-[10px] text-gray-300 text-center -mt-1">Fuente: Vercel Analytics</p>
     </div>
   );
 }
@@ -455,6 +526,7 @@ export default function TherapistPortalPage() {
         ) : (
           <div className="space-y-5">
             <StatsPanel />
+            <TrafficPanel />
             <CountriesPanel />
 
             <div>
