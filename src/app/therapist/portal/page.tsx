@@ -8,7 +8,8 @@ import { es } from "date-fns/locale";
 import {
   Users, ChevronRight, LogOut, Stethoscope, Loader2,
   CheckCircle, PlayCircle, Clock, AlertTriangle, FileText,
-  ChevronDown, ChevronUp, MessageSquare,
+  ChevronDown, ChevronUp, MessageSquare, BarChart3, TrendingUp,
+  MessageCircle, ShieldAlert,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -50,6 +51,113 @@ interface Message {
   contentText?: string;
   sequenceNumber: number;
   createdAt: string;
+}
+
+interface PlatformStats {
+  totalPatients: number;
+  totalSessions: number;
+  completedSessions: number;
+  inProgressSessions: number;
+  abandonedSessions: number;
+  crisisSessions: number;
+  avgDurationSeconds: number | null;
+  avgMoodStart: number | null;
+  avgMoodEnd: number | null;
+  totalTurns: number;
+}
+
+function StatCard({ label, value, sub, color = "gray", icon: Icon }: {
+  label: string; value: string | number; sub?: string;
+  color?: "gray" | "green" | "blue" | "red" | "amber" | "purple";
+  icon: React.ElementType;
+}) {
+  const colors = {
+    gray:   "bg-gray-50   text-gray-700   border-gray-100",
+    green:  "bg-green-50  text-green-700  border-green-100",
+    blue:   "bg-blue-50   text-blue-700   border-blue-100",
+    red:    "bg-red-50    text-red-700    border-red-100",
+    amber:  "bg-amber-50  text-amber-700  border-amber-100",
+    purple: "bg-purple-50 text-purple-700 border-purple-100",
+  };
+  return (
+    <div className={`rounded-2xl border p-4 ${colors[color]}`}>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-medium opacity-70">{label}</p>
+        <Icon size={14} className="opacity-50" />
+      </div>
+      <p className="text-2xl font-bold">{value}</p>
+      {sub && <p className="text-xs opacity-60 mt-0.5">{sub}</p>}
+    </div>
+  );
+}
+
+function StatsPanel() {
+  const { data: stats, isLoading } = useQuery<PlatformStats>({
+    queryKey: ["therapist", "stats"],
+    queryFn: () => therapistApi().get("/therapist/portal/stats").then(r => r.data),
+    refetchInterval: 30_000,
+  });
+
+  if (isLoading) return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 flex justify-center">
+      <Loader2 size={20} className="animate-spin text-gray-300" />
+    </div>
+  );
+  if (!stats) return null;
+
+  const avgDurMin = stats.avgDurationSeconds ? Math.round(stats.avgDurationSeconds / 60) : null;
+  const moodDelta = stats.avgMoodStart && stats.avgMoodEnd
+    ? (stats.avgMoodEnd - stats.avgMoodStart).toFixed(1)
+    : null;
+  const completionRate = stats.totalSessions > 0
+    ? Math.round((stats.completedSessions / stats.totalSessions) * 100)
+    : 0;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <BarChart3 size={15} className="text-emerald-600" />
+        <h2 className="text-sm font-semibold text-gray-800">Tablero de uso</h2>
+        <span className="ml-auto text-xs text-gray-400">actualiza cada 30s</span>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label="Pacientes" value={stats.totalPatients} icon={Users} color="blue" />
+        <StatCard label="Sesiones totales" value={stats.totalSessions} icon={MessageCircle} color="gray" />
+        <StatCard label="Completadas" value={stats.completedSessions} sub={`${completionRate}% tasa`} icon={CheckCircle} color="green" />
+        <StatCard label="Con crisis" value={stats.crisisSessions} icon={ShieldAlert} color={stats.crisisSessions > 0 ? "red" : "gray"} />
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <StatCard label="En progreso" value={stats.inProgressSessions} icon={PlayCircle} color="blue" />
+        <StatCard label="Abandonadas" value={stats.abandonedSessions} icon={AlertTriangle} color="amber" />
+        <StatCard label="Duración media" value={avgDurMin ? `${avgDurMin} min` : "—"} icon={Clock} color="purple" />
+        <StatCard label="Turnos totales" value={stats.totalTurns.toLocaleString()} icon={MessageSquare} color="gray" />
+      </div>
+
+      {stats.avgMoodStart && stats.avgMoodEnd && (
+        <div className="bg-gray-50 rounded-xl p-4 flex items-center gap-6">
+          <TrendingUp size={16} className="text-emerald-600 flex-shrink-0" />
+          <div className="flex items-center gap-4 text-sm">
+            <div>
+              <p className="text-xs text-gray-400">Ánimo inicial promedio</p>
+              <p className="font-bold text-gray-900">{stats.avgMoodStart.toFixed(1)} / 10</p>
+            </div>
+            <div className="text-lg">→</div>
+            <div>
+              <p className="text-xs text-gray-400">Ánimo final promedio</p>
+              <p className="font-bold text-gray-900">{stats.avgMoodEnd.toFixed(1)} / 10</p>
+            </div>
+            {moodDelta && (
+              <div className={`ml-2 font-bold text-lg ${parseFloat(moodDelta) > 0 ? "text-green-600" : parseFloat(moodDelta) < 0 ? "text-red-500" : "text-gray-400"}`}>
+                {parseFloat(moodDelta) > 0 ? `+${moodDelta}` : moodDelta}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 const MOOD_EMOJI: Record<number, string> = {
@@ -274,6 +382,8 @@ export default function TherapistPortalPage() {
           <PatientDetail patient={selectedPatient} onBack={() => setSelectedPatient(null)} />
         ) : (
           <div className="space-y-5">
+            <StatsPanel />
+
             <div>
               <h1 className="text-xl font-bold text-gray-900">Mis pacientes</h1>
               <p className="text-sm text-gray-400 mt-1">
