@@ -1,85 +1,44 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, CheckCircle, Sun, Moon } from "lucide-react";
+import { ArrowRight, CheckCircle, MessageCircle, TrendingUp, FileText, Shield, Clock, Brain } from "lucide-react";
 import { useT } from "@/lib/i18n";
-import { useTheme } from "@/hooks/useTheme";
-import clsx from "clsx";
 
 export default function LandingPage() {
   const { t, lang, setLang } = useT();
-  const { dark, toggle } = useTheme();
-
-  const features = [
-    {
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        </svg>
-      ),
-      title: t.landing.featureSessionsTitle,
-      desc:  t.landing.featureSessionsDesc,
-    },
-    {
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-        </svg>
-      ),
-      title: t.landing.featureProgressTitle,
-      desc:  t.landing.featureProgressDesc,
-    },
-    {
-      icon: (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>
-      ),
-      title: t.landing.featureReportsTitle,
-      desc:  t.landing.featureReportsDesc,
-    },
-  ];
 
   return (
-    <div className="min-h-screen bg-surface-subtle flex flex-col">
+    <div className="min-h-screen bg-[#080c18] text-white flex flex-col overflow-x-hidden">
 
       {/* ── Navbar ── */}
-      <nav className="bg-surface border-b border-line">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-[#080c18]/80 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4a9fd8] to-[#0acad0] flex items-center justify-center shadow-lg shadow-cyan-500/20">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
               </svg>
             </div>
-            <span className="font-semibold text-ink text-sm">TherapyAI</span>
+            <span className="font-semibold text-white text-sm tracking-tight">TherapyAI</span>
           </div>
 
-          {/* Right controls */}
-          <div className="flex items-center gap-1.5">
-            {/* Language selector */}
+          <div className="flex items-center gap-2">
             {(["es", "en"] as const).map((l) => (
               <button key={l} onClick={() => setLang(l)}
-                className={clsx("text-xs px-2.5 py-1 rounded-md font-medium transition-colors",
-                  lang === l ? "bg-brand-600 text-white" : "text-ink-tertiary hover:bg-surface-muted"
-                )}>
+                className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all ${
+                  lang === l
+                    ? "bg-white/10 text-white"
+                    : "text-white/40 hover:text-white/70"
+                }`}>
                 {l.toUpperCase()}
               </button>
             ))}
-
-            {/* Dark mode toggle */}
-            <button onClick={toggle}
-              className="p-1.5 rounded-md text-ink-tertiary hover:bg-surface-muted hover:text-ink-secondary transition-colors ml-1">
-              {dark ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
-
-            <div className="w-px h-4 bg-line mx-1" />
-
-            <Link href="/auth/login" className="btn btn-ghost text-sm px-3 py-1.5">
+            <div className="w-px h-4 bg-white/10 mx-1" />
+            <Link href="/auth/login"
+              className="text-sm text-white/60 hover:text-white transition-colors px-3 py-1.5 rounded-lg hover:bg-white/5">
               {t.auth.login}
             </Link>
-            <Link href="/auth/register" className="btn btn-primary">
+            <Link href="/auth/register"
+              className="text-sm font-semibold px-4 py-2 rounded-xl bg-gradient-to-r from-[#4a9fd8] to-[#0acad0] text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:opacity-90 transition-all flex items-center gap-1.5">
               {t.landing.getStarted} <ArrowRight size={13} />
             </Link>
           </div>
@@ -87,66 +46,216 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-6 py-24 animate-slide-up">
-        <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 bg-brand-50 border border-brand-100 px-3 py-1 rounded-full mb-6">
-          <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
+      <section className="relative flex flex-col items-center justify-center text-center px-6 pt-40 pb-32">
+        {/* Background glow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-gradient-radial from-cyan-500/10 via-blue-600/5 to-transparent rounded-full blur-3xl" />
+          <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-blue-600/8 rounded-full blur-3xl" />
+          <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-cyan-500/8 rounded-full blur-3xl" />
+        </div>
+
+        {/* Badge */}
+        <div className="relative inline-flex items-center gap-2 text-xs font-semibold text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 px-4 py-1.5 rounded-full mb-8">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
           {t.landing.badge}
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-bold text-ink tracking-tight leading-[1.15] mb-5 max-w-2xl">
-          {t.landing.heroTitle}{" "}
-          <span className="text-brand-600">{t.landing.heroHighlight}</span>
+        {/* Headline */}
+        <h1 className="relative text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] mb-6 max-w-3xl">
+          <span className="text-white">{t.landing.heroTitle} </span>
+          <span className="bg-gradient-to-r from-[#4a9fd8] to-[#0acad0] bg-clip-text text-transparent">
+            {t.landing.heroHighlight}
+          </span>
         </h1>
 
-        <p className="text-base text-ink-tertiary max-w-lg leading-relaxed mb-8">
+        {/* Subtitle */}
+        <p className="relative text-lg text-white/50 max-w-xl leading-relaxed mb-10">
           {t.landing.heroSubtitle}
         </p>
 
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <Link href="/auth/register" className="btn btn-primary btn-lg shadow-xs">
-            {t.landing.startFree} <ArrowRight size={15} />
+        {/* CTAs */}
+        <div className="relative flex flex-wrap items-center justify-center gap-3 mb-12">
+          <Link href="/auth/register"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base bg-gradient-to-r from-[#4a9fd8] to-[#0acad0] text-white shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:opacity-90 transition-all">
+            {t.landing.startFree} <ArrowRight size={16} />
           </Link>
-          <Link href="/auth/login" className="btn btn-secondary btn-lg">
+          <Link href="/auth/login"
+            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white transition-all">
             {t.auth.login}
           </Link>
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8">
+        {/* Trust signals */}
+        <div className="relative flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
           {[t.landing.trust1, t.landing.trust2, t.landing.trust3].map((item) => (
-            <span key={item} className="flex items-center gap-1.5 text-xs text-ink-tertiary">
-              <CheckCircle size={12} className="text-brand-500" />
+            <span key={item} className="flex items-center gap-2 text-sm text-white/40">
+              <CheckCircle size={13} className="text-cyan-500" />
               {item}
             </span>
           ))}
         </div>
-      </div>
+      </section>
 
-      {/* ── Feature grid ── */}
-      <div className="border-t border-line bg-surface">
-        <div className="max-w-4xl mx-auto px-6 py-16 grid sm:grid-cols-3 gap-8">
-          {features.map((f) => (
-            <div key={f.title} className="flex flex-col gap-3">
-              <div className="w-9 h-9 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center">
-                {f.icon}
+      {/* ── How it works ── */}
+      <section className="px-6 py-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-3">
+              {lang === "es" ? "Cómo funciona" : "How it works"}
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white">
+              {lang === "es" ? "Comenzá en 3 pasos" : "Get started in 3 steps"}
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-6">
+            {[
+              {
+                step: "01",
+                title: lang === "es" ? "Creá tu cuenta" : "Create your account",
+                desc: lang === "es" ? "Registrate gratis en segundos, sin tarjeta de crédito." : "Sign up for free in seconds, no credit card needed.",
+              },
+              {
+                step: "02",
+                title: lang === "es" ? "Contá cómo te sentís" : "Share how you feel",
+                desc: lang === "es" ? "Empezá una sesión por texto o voz cuando lo necesités, de día o de noche." : "Start a session by text or voice whenever you need, day or night.",
+              },
+              {
+                step: "03",
+                title: lang === "es" ? "Seguí tu progreso" : "Track your progress",
+                desc: lang === "es" ? "La IA recuerda tu historia y genera reportes para compartir con tu terapeuta." : "The AI remembers your history and generates reports to share with your therapist.",
+              },
+            ].map((item) => (
+              <div key={item.step}
+                className="relative bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6 hover:bg-white/[0.05] transition-colors group">
+                <div className="text-5xl font-black text-white/[0.06] mb-4 group-hover:text-white/[0.09] transition-colors">
+                  {item.step}
+                </div>
+                <h3 className="text-base font-semibold text-white mb-2">{item.title}</h3>
+                <p className="text-sm text-white/40 leading-relaxed">{item.desc}</p>
               </div>
-              <div>
-                <p className="font-semibold text-ink text-sm mb-1">{f.title}</p>
-                <p className="text-xs text-ink-tertiary leading-relaxed">{f.desc}</p>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* ── Features ── */}
+      <section className="px-6 py-20">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold text-cyan-400 uppercase tracking-widest mb-3">
+              {lang === "es" ? "Todo lo que necesitás" : "Everything you need"}
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white">
+              {lang === "es" ? "Diseñado para tu bienestar" : "Designed for your wellbeing"}
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              {
+                icon: MessageCircle,
+                title: t.landing.featureSessionsTitle,
+                desc: t.landing.featureSessionsDesc,
+                accent: "from-blue-500/20 to-blue-500/5",
+                iconColor: "text-blue-400",
+                iconBg: "bg-blue-500/10",
+              },
+              {
+                icon: TrendingUp,
+                title: t.landing.featureProgressTitle,
+                desc: t.landing.featureProgressDesc,
+                accent: "from-cyan-500/20 to-cyan-500/5",
+                iconColor: "text-cyan-400",
+                iconBg: "bg-cyan-500/10",
+              },
+              {
+                icon: FileText,
+                title: t.landing.featureReportsTitle,
+                desc: t.landing.featureReportsDesc,
+                accent: "from-violet-500/20 to-violet-500/5",
+                iconColor: "text-violet-400",
+                iconBg: "bg-violet-500/10",
+              },
+              {
+                icon: Shield,
+                title: lang === "es" ? "Privacidad total" : "Full privacy",
+                desc: lang === "es" ? "Tus conversaciones están encriptadas y solo son accesibles por vos." : "Your conversations are encrypted and only accessible by you.",
+                accent: "from-emerald-500/20 to-emerald-500/5",
+                iconColor: "text-emerald-400",
+                iconBg: "bg-emerald-500/10",
+              },
+              {
+                icon: Clock,
+                title: lang === "es" ? "Disponible 24/7" : "Available 24/7",
+                desc: lang === "es" ? "Sin turnos ni listas de espera. Estamos cuando más lo necesitás." : "No appointments or waiting lists. We're there when you need us most.",
+                accent: "from-amber-500/20 to-amber-500/5",
+                iconColor: "text-amber-400",
+                iconBg: "bg-amber-500/10",
+              },
+              {
+                icon: Brain,
+                title: lang === "es" ? "IA especializada" : "Specialized AI",
+                desc: lang === "es" ? "Entrenada en técnicas de terapia cognitivo-conductual y mindfulness." : "Trained in cognitive-behavioral therapy and mindfulness techniques.",
+                accent: "from-pink-500/20 to-pink-500/5",
+                iconColor: "text-pink-400",
+                iconBg: "bg-pink-500/10",
+              },
+            ].map((f) => (
+              <div key={f.title}
+                className="relative bg-white/[0.03] border border-white/[0.07] rounded-2xl p-6 overflow-hidden hover:border-white/[0.12] transition-all group">
+                <div className={`absolute inset-0 bg-gradient-to-br ${f.accent} opacity-0 group-hover:opacity-100 transition-opacity`} />
+                <div className="relative">
+                  <div className={`w-10 h-10 rounded-xl ${f.iconBg} flex items-center justify-center mb-4`}>
+                    <f.icon size={18} className={f.iconColor} />
+                  </div>
+                  <h3 className="text-sm font-semibold text-white mb-2">{f.title}</h3>
+                  <p className="text-xs text-white/40 leading-relaxed">{f.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA banner ── */}
+      <section className="px-6 py-20">
+        <div className="max-w-3xl mx-auto">
+          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#0e2a4a] to-[#0a1f35] border border-white/[0.08] p-10 text-center">
+            {/* Glow */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-40 bg-cyan-500/10 blur-3xl" />
+            </div>
+            <div className="relative">
+              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+                {lang === "es" ? "Tu bienestar no puede esperar" : "Your wellbeing can't wait"}
+              </h2>
+              <p className="text-white/50 mb-8 max-w-lg mx-auto">
+                {lang === "es"
+                  ? "Unite a miles de personas que ya cuidan su salud mental con TherapyAI."
+                  : "Join thousands of people already caring for their mental health with TherapyAI."}
+              </p>
+              <Link href="/auth/register"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-semibold text-base bg-gradient-to-r from-[#4a9fd8] to-[#0acad0] text-white shadow-xl shadow-cyan-500/30 hover:shadow-cyan-500/50 hover:opacity-90 transition-all">
+                {t.landing.startFree} <ArrowRight size={16} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── Footer ── */}
-      <footer className="border-t border-line bg-surface">
-        <div className="max-w-5xl mx-auto px-6 h-12 flex items-center justify-between">
-          <p className="text-xs text-ink-disabled">
-            © {new Date().getFullYear()} TherapyAI
-          </p>
-          <p className="text-xs text-ink-disabled">
-            {t.landing.crisisLine}
-          </p>
+      <footer className="border-t border-white/[0.06] mt-auto">
+        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#4a9fd8] to-[#0acad0] flex items-center justify-center">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </div>
+            <span className="text-xs text-white/30">© {new Date().getFullYear()} TherapyAI</span>
+          </div>
+          <p className="text-xs text-white/25">{t.landing.crisisLine}</p>
         </div>
       </footer>
     </div>
