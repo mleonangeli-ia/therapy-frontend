@@ -14,7 +14,10 @@ export const metadata: Metadata = {
   title: "TherapyAI",
   description: "Acompañamiento psicológico a través de inteligencia artificial con seguimiento profesional.",
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png", sizes: "32x32" },
+    ],
     apple: "/favicon.png",
   },
 };
