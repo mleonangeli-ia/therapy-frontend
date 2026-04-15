@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, CheckCircle, MessageCircle, TrendingUp, FileText, Shield, Clock, Brain } from "lucide-react";
 import { useT } from "@/lib/i18n";
 
@@ -46,53 +47,97 @@ export default function LandingPage() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="relative flex flex-col items-center justify-center text-center px-6 pt-40 pb-32">
+      <section className="relative px-6 pt-32 pb-20">
         {/* Background glow */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-gradient-radial from-cyan-500/10 via-blue-600/5 to-transparent rounded-full blur-3xl" />
-          <div className="absolute top-1/3 left-1/4 w-[300px] h-[300px] bg-blue-600/8 rounded-full blur-3xl" />
-          <div className="absolute top-1/3 right-1/4 w-[300px] h-[300px] bg-cyan-500/8 rounded-full blur-3xl" />
+          <div className="absolute top-1/3 left-1/4 w-[500px] h-[400px] bg-blue-600/8 rounded-full blur-3xl" />
+          <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-cyan-500/8 rounded-full blur-3xl" />
         </div>
 
-        {/* Badge */}
-        <div className="relative inline-flex items-center gap-2 text-xs font-semibold text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 px-4 py-1.5 rounded-full mb-8">
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-          {t.landing.badge}
-        </div>
+        <div className="relative max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left: text */}
+          <div className="flex flex-col items-start text-left">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-cyan-400 bg-cyan-400/10 border border-cyan-400/20 px-4 py-1.5 rounded-full mb-8">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+              {t.landing.badge}
+            </div>
 
-        {/* Headline */}
-        <h1 className="relative text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.08] mb-6 max-w-3xl">
-          <span className="text-white">{t.landing.heroTitle} </span>
-          <span className="bg-gradient-to-r from-[#4a9fd8] to-[#0acad0] bg-clip-text text-transparent">
-            {t.landing.heroHighlight}
-          </span>
-        </h1>
+            {/* Headline */}
+            <h1 className="text-5xl sm:text-6xl font-bold tracking-tight leading-[1.08] mb-6">
+              <span className="text-white">{t.landing.heroTitle} </span>
+              <span className="bg-gradient-to-r from-[#4a9fd8] to-[#0acad0] bg-clip-text text-transparent">
+                {t.landing.heroHighlight}
+              </span>
+            </h1>
 
-        {/* Subtitle */}
-        <p className="relative text-lg text-white/50 max-w-xl leading-relaxed mb-10">
-          {t.landing.heroSubtitle}
-        </p>
+            {/* Subtitle */}
+            <p className="text-lg text-white/50 max-w-lg leading-relaxed mb-10">
+              {t.landing.heroSubtitle}
+            </p>
 
-        {/* CTAs */}
-        <div className="relative flex flex-wrap items-center justify-center gap-3 mb-12">
-          <Link href="/auth/register"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base bg-gradient-to-r from-[#4a9fd8] to-[#0acad0] text-white shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:opacity-90 transition-all">
-            {t.landing.startFree} <ArrowRight size={16} />
-          </Link>
-          <Link href="/auth/login"
-            className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white transition-all">
-            {t.auth.login}
-          </Link>
-        </div>
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-3 mb-10">
+              <Link href="/auth/register"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base bg-gradient-to-r from-[#4a9fd8] to-[#0acad0] text-white shadow-xl shadow-cyan-500/25 hover:shadow-cyan-500/40 hover:opacity-90 transition-all">
+                {t.landing.startFree} <ArrowRight size={16} />
+              </Link>
+              <Link href="/auth/login"
+                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl font-semibold text-base bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 hover:text-white transition-all">
+                {t.auth.login}
+              </Link>
+            </div>
 
-        {/* Trust signals */}
-        <div className="relative flex flex-wrap items-center justify-center gap-x-8 gap-y-3">
-          {[t.landing.trust1, t.landing.trust2, t.landing.trust3].map((item) => (
-            <span key={item} className="flex items-center gap-2 text-sm text-white/40">
-              <CheckCircle size={13} className="text-cyan-500" />
-              {item}
-            </span>
-          ))}
+            {/* Trust signals */}
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              {[t.landing.trust1, t.landing.trust2, t.landing.trust3].map((item) => (
+                <span key={item} className="flex items-center gap-2 text-sm text-white/40">
+                  <CheckCircle size={13} className="text-cyan-500" />
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Right: image */}
+          <div className="relative hidden lg:block">
+            {/* Outer glow ring */}
+            <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#4a9fd8]/20 to-[#0acad0]/10 blur-2xl" />
+            {/* Card */}
+            <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl shadow-cyan-500/10">
+              <Image
+                src="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=900&auto=format&fit=crop&q=80"
+                alt="Bienestar emocional"
+                width={900}
+                height={650}
+                className="w-full object-cover"
+                priority
+              />
+              {/* Bottom fade to dark */}
+              <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#080c18]/80 to-transparent" />
+              {/* Floating badge on image */}
+              <div className="absolute bottom-6 left-6 right-6 flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl px-4 py-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4a9fd8] to-[#0acad0] flex items-center justify-center flex-shrink-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-white">
+                    {lang === "es" ? "Disponible ahora" : "Available now"}
+                  </p>
+                  <p className="text-xs text-white/50">
+                    {lang === "es" ? "Tu terapeuta IA está lista" : "Your AI therapist is ready"}
+                  </p>
+                </div>
+                <div className="ml-auto flex gap-0.5">
+                  {[...Array(5)].map((_, i) => (
+                    <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill="#0acad0" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01z"/></svg>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
