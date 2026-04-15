@@ -114,28 +114,7 @@ export default function LandingPage() {
                 priority
               />
               {/* Bottom fade to dark */}
-              <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#080c18]/80 to-transparent" />
-              {/* Floating badge on image */}
-              <div className="absolute bottom-6 left-6 right-6 flex items-center gap-3 bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl px-4 py-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#4a9fd8] to-[#0acad0] flex items-center justify-center flex-shrink-0">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-white">
-                    {lang === "es" ? "Disponible ahora" : "Available now"}
-                  </p>
-                  <p className="text-xs text-white/50">
-                    {lang === "es" ? "Tu terapeuta IA está lista" : "Your AI therapist is ready"}
-                  </p>
-                </div>
-                <div className="ml-auto flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill="#0acad0" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01z"/></svg>
-                  ))}
-                </div>
-              </div>
+              <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#080c18]/60 to-transparent" />
             </div>
           </div>
         </div>
