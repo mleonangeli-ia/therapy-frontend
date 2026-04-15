@@ -37,25 +37,33 @@ function doRefresh(): Promise<string> {
   return refreshPromise;
 }
 
-// Auto-refresh on 401
+function redirectToLogin() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("patient_id");
+  localStorage.removeItem("patient_name");
+  localStorage.removeItem("consent_required");
+  localStorage.removeItem("token_expiry");
+  window.location.replace("/auth/login");
+}
+
+// Auto-refresh on 401, redirect on expired session (401/403 after failed refresh)
 api.interceptors.response.use(
   (res) => res,
   async (error: AxiosError) => {
     const original = error.config as typeof error.config & { _retry?: boolean };
     const isAuthEndpoint = original.url?.includes("/auth/login") || original.url?.includes("/auth/register") || original.url?.includes("/auth/refresh");
-    if (error.response?.status === 401 && !original._retry && !isAuthEndpoint) {
+    const status = error.response?.status;
+
+    if ((status === 401 || status === 403) && !original._retry && !isAuthEndpoint) {
       original._retry = true;
       try {
         const newToken = await doRefresh();
         if (original.headers) original.headers.Authorization = `Bearer ${newToken}`;
         return api(original);
       } catch {
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        if (typeof window !== "undefined") {
-          window.location.replace("/auth/login");
-        }
-        // Never resolve — page is navigating away, no onError callbacks should fire
+        redirectToLogin();
         return new Promise(() => {});
       }
     }

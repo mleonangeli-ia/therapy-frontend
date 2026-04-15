@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { isAuthenticated, isConsentRequired, clearAuth } from "@/lib/auth";
+import { isAuthenticated, isConsentRequired, clearAuth, isTokenExpired } from "@/lib/auth";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
 const INACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
@@ -25,6 +25,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       window.location.replace("/auth/login");
     };
 
+    // Redirect immediately if token already expired
+    if (isTokenExpired()) { logout(); return; }
+
+    // Redirect when user comes back to the tab and token is expired
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible" && isTokenExpired()) logout();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     const resetTimer = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(logout, INACTIVITY_TIMEOUT_MS);
@@ -36,6 +45,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       ACTIVITY_EVENTS.forEach((e) => window.removeEventListener(e, resetTimer));
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, [router]);
 
