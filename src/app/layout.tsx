@@ -13,6 +13,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "TherapyAI",
   description: "Acompañamiento psicológico a través de inteligencia artificial con seguimiento profesional.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export const viewport: Viewport = {
