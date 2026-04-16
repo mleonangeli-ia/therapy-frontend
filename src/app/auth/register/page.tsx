@@ -12,7 +12,14 @@ import { AxiosError } from "axios";
 import { ArrowRight, Loader2, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { useT } from "@/lib/i18n";
 import { useState } from "react";
-import clsx from "clsx";
+
+const Logo = () => (
+  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#4a9fd8] to-[#0acad0] flex items-center justify-center shadow-lg shadow-cyan-500/20">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+    </svg>
+  </div>
+);
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -62,108 +69,104 @@ export default function RegisterPage() {
   const serverError =
     mutation.error instanceof AxiosError ? mutation.error.response?.data?.message : null;
 
+  const inputClass = "w-full px-4 py-3 rounded-xl bg-white/[0.05] border border-white/[0.10] text-white placeholder:text-white/25 text-sm focus:outline-none focus:border-cyan-500/50 focus:bg-white/[0.07] transition-all";
+  const labelClass = "text-xs font-medium text-white/60";
+  const errorClass = "flex items-center gap-1.5 text-xs text-red-400";
+
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-surface-subtle">
-      {/* Left — branding */}
-      <div className="hidden lg:flex flex-col justify-between bg-brand-600 p-12 text-white">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-          </div>
-          <span className="font-semibold text-sm">TherapyAI</span>
-        </div>
-        <div className="space-y-4 max-w-xs">
-          <h2 className="text-2xl font-semibold leading-snug">{t.auth.brandTagline}</h2>
-          <p className="text-brand-200 text-sm leading-relaxed">{t.auth.brandDesc}</p>
-        </div>
-        <p className="text-brand-300 text-xs">
-          © {new Date().getFullYear()} TherapyAI · {t.auth.allRights}
-        </p>
+    <div className="min-h-screen bg-[#080c18] text-white flex flex-col overflow-x-hidden">
+      {/* Glow */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-cyan-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-[400px] h-[300px] bg-blue-600/5 rounded-full blur-3xl" />
       </div>
 
-      {/* Right — form */}
-      <div className="flex items-center justify-center p-8 relative">
-        {/* Language selector */}
-        <div className="absolute top-4 right-4 flex gap-1">
+      {/* Navbar */}
+      <nav className="relative border-b border-white/[0.06] px-6 h-16 flex items-center justify-between flex-shrink-0">
+        <Link href="/" className="flex items-center gap-2.5">
+          <Logo />
+          <span className="font-semibold text-white text-sm tracking-tight">TherapyAI</span>
+        </Link>
+        <div className="flex items-center gap-2">
           {(["es", "en"] as const).map((l) => (
             <button key={l} onClick={() => setLang(l)}
-              className={clsx("text-xs px-2.5 py-1 rounded-md font-medium transition-colors",
-                lang === l ? "bg-brand-600 text-white" : "text-ink-tertiary hover:bg-surface-muted"
-              )}>
+              className={`text-xs px-2.5 py-1 rounded-lg font-medium transition-all ${
+                lang === l ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70"
+              }`}>
               {l.toUpperCase()}
             </button>
           ))}
         </div>
+      </nav>
 
+      {/* Content */}
+      <div className="relative flex-1 flex items-center justify-center p-6 py-10">
         <div className="w-full max-w-sm animate-slide-up">
-          <div className="flex lg:hidden items-center gap-2 mb-8">
-            <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-            </div>
-            <span className="font-semibold text-ink text-sm">TherapyAI</span>
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-white mb-1.5">{t.auth.register}</h1>
+            <p className="text-sm text-white/40">{t.auth.registerSubtitle}</p>
           </div>
 
-          <h1 className="text-xl font-semibold text-ink mb-1">{t.auth.register}</h1>
-          <p className="text-sm text-ink-tertiary mb-6">{t.auth.registerSubtitle}</p>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className={labelClass}>{t.auth.fullName}</label>
+              <input {...register("fullName")} className={inputClass} placeholder="Tu nombre completo" autoComplete="name" />
+              {errors.fullName && <p className={errorClass}><AlertCircle size={11} />{errors.fullName.message}</p>}
+            </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
-            <div>
-              <label className="field-label">{t.auth.fullName}</label>
-              <input {...register("fullName")} className="field-input" placeholder="Tu nombre" autoComplete="name" />
-              {errors.fullName && <p className="field-error"><AlertCircle size={11} />{errors.fullName.message}</p>}
+            <div className="space-y-1.5">
+              <label className={labelClass}>{t.auth.email}</label>
+              <input {...register("email")} type="email" className={inputClass} placeholder="tu@email.com" autoComplete="email" />
+              {errors.email && <p className={errorClass}><AlertCircle size={11} />{errors.email.message}</p>}
             </div>
-            <div>
-              <label className="field-label">{t.auth.email}</label>
-              <input {...register("email")} type="email" className="field-input" placeholder="tu@email.com" autoComplete="email" />
-              {errors.email && <p className="field-error"><AlertCircle size={11} />{errors.email.message}</p>}
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>{t.auth.phone}</label>
+              <input {...register("phone")} type="tel" className={inputClass} placeholder="+54 11 1234-5678" autoComplete="tel" />
             </div>
-            <div>
-              <label className="field-label">{t.auth.phone}</label>
-              <input {...register("phone")} type="tel" className="field-input" placeholder="+54 11 1234-5678" autoComplete="tel" />
-            </div>
-            <div>
-              <label className="field-label">{t.auth.password}</label>
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>{t.auth.password}</label>
               <div className="relative">
-                <input {...register("password")} type={showPassword ? "text" : "password"} className="field-input pr-10" placeholder="••••••••" autoComplete="new-password" />
+                <input {...register("password")} type={showPassword ? "text" : "password"} className={`${inputClass} pr-10`} placeholder="••••••••" autoComplete="new-password" />
                 <button type="button" onClick={() => setShowPassword(v => !v)}
-                  className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-white/30 hover:text-white/60 transition-colors">
                   {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
-              {errors.password && <p className="field-error"><AlertCircle size={11} />{errors.password.message}</p>}
+              {errors.password && <p className={errorClass}><AlertCircle size={11} />{errors.password.message}</p>}
             </div>
-            <div>
-              <label className="field-label">{t.auth.confirmPassword}</label>
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>{t.auth.confirmPassword}</label>
               <div className="relative">
-                <input {...register("confirmPassword")} type={showConfirm ? "text" : "password"} className="field-input pr-10" placeholder="••••••••" autoComplete="new-password" />
+                <input {...register("confirmPassword")} type={showConfirm ? "text" : "password"} className={`${inputClass} pr-10`} placeholder="••••••••" autoComplete="new-password" />
                 <button type="button" onClick={() => setShowConfirm(v => !v)}
-                  className="absolute inset-y-0 right-0 px-3 flex items-center text-ink-disabled hover:text-ink-tertiary transition-colors">
+                  className="absolute inset-y-0 right-0 px-3 flex items-center text-white/30 hover:text-white/60 transition-colors">
                   {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
-              {errors.confirmPassword && <p className="field-error"><AlertCircle size={11} />{errors.confirmPassword.message}</p>}
+              {errors.confirmPassword && <p className={errorClass}><AlertCircle size={11} />{errors.confirmPassword.message}</p>}
             </div>
 
             {(serverError || anyError) && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg px-3 py-2.5">
+              <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-xs rounded-xl px-3 py-2.5">
                 <AlertCircle size={13} className="flex-shrink-0" />{serverError || anyError}
               </div>
             )}
 
-            <button type="submit" className="btn-primary btn-lg w-full" disabled={mutation.isPending}>
+            <button type="submit" disabled={mutation.isPending}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm bg-gradient-to-r from-[#4a9fd8] to-[#0acad0] text-white shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/35 hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed mt-2">
               {mutation.isPending
                 ? <Loader2 size={16} className="animate-spin" />
                 : <><span>{t.auth.registerBtn}</span><ArrowRight size={14} /></>}
             </button>
           </form>
 
-          <p className="text-center text-xs text-ink-tertiary mt-5">
+          <p className="text-center text-xs text-white/30 mt-6">
             {t.auth.hasAccount}{" "}
-            <Link href="/auth/login" className="font-medium text-brand-600 hover:text-brand-700">
+            <Link href="/auth/login" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
               {t.auth.signIn}
             </Link>
           </p>
