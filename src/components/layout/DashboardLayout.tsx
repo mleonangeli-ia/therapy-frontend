@@ -62,10 +62,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* ── Mobile top bar ── */}
       <div className="lg:hidden fixed top-0 inset-x-0 z-30 bg-surface border-b border-line safe-top">
       <div className="h-14 flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2">
           <Logo />
           <span className="font-semibold text-ink text-sm">TherapyAI</span>
-        </div>
+        </Link>
         <div className="flex items-center gap-2">
           <button onClick={toggle} className="p-1.5 rounded-lg text-ink-tertiary hover:bg-surface-muted transition-colors">
             {dark ? <Sun size={16} /> : <Moon size={16} />}
@@ -97,9 +97,11 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       {/* ── Desktop sidebar ── */}
       <aside className="hidden lg:flex w-56 fixed inset-y-0 flex-col bg-surface border-r border-line z-20">
         {/* Logo */}
-        <div className="h-14 flex items-center gap-2 px-4 border-b border-line flex-shrink-0">
-          <Logo />
-          <span className="font-semibold text-ink text-sm">TherapyAI</span>
+        <div className="h-14 flex items-center px-4 border-b border-line flex-shrink-0">
+          <Link href="/" className="flex items-center gap-2">
+            <Logo />
+            <span className="font-semibold text-ink text-sm">TherapyAI</span>
+          </Link>
         </div>
 
         {/* Nav */}
