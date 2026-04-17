@@ -25,9 +25,21 @@ export default function RegisterPage() {
   const router = useRouter();
   const { t, lang, setLang } = useT();
 
+  const minAge = lang === "es" ? "Debés tener al menos 18 años" : "You must be at least 18 years old";
+  const dobRequired = lang === "es" ? "Fecha de nacimiento obligatoria" : "Date of birth is required";
+
   const schema = z.object({
     fullName:        z.string().min(2, t.auth.nameTooShort).max(255),
     email:           z.string().email(t.auth.invalidEmail),
+    dateOfBirth:     z.string().min(1, dobRequired).refine((val) => {
+      const dob = new Date(val);
+      const today = new Date();
+      const age = today.getFullYear() - dob.getFullYear();
+      const monthDiff = today.getMonth() - dob.getMonth();
+      const dayDiff = today.getDate() - dob.getDate();
+      const actualAge = monthDiff < 0 || (monthDiff === 0 && dayDiff < 0) ? age - 1 : age;
+      return actualAge >= 18;
+    }, minAge),
     password:        z.string().min(8, t.auth.minChars)
       .regex(/[A-Z]/, t.auth.needUppercase)
       .regex(/[a-z]/, t.auth.needLowercase)
@@ -119,6 +131,12 @@ export default function RegisterPage() {
               <label className={labelClass}>{t.auth.email}</label>
               <input {...register("email")} type="email" className={inputClass} placeholder="tu@email.com" autoComplete="email" />
               {errors.email && <p className={errorClass}><AlertCircle size={11} />{errors.email.message}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className={labelClass}>{lang === "es" ? "Fecha de nacimiento" : "Date of birth"}</label>
+              <input {...register("dateOfBirth")} type="date" className={`${inputClass} [color-scheme:dark]`} autoComplete="bday" />
+              {errors.dateOfBirth && <p className={errorClass}><AlertCircle size={11} />{errors.dateOfBirth.message}</p>}
             </div>
 
             <div className="space-y-1.5">
