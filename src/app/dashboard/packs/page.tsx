@@ -94,39 +94,60 @@ export default function PacksPage() {
       )}
 
       {/* Active pack */}
-      {activePack && (
-        <div className="card border-brand-200 bg-brand-50">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <span className="badge badge-blue">{t.packs.activePack}</span>
-              <h2 className="section-heading mt-2">{activePack.packType.name}</h2>
+      {activePack && (() => {
+        const pct = activePack.sessionsTotal > 0
+          ? Math.round((activePack.sessionsUsed / activePack.sessionsTotal) * 100) : 0;
+        const isPremium = activePack.packType.name.toLowerCase().includes("premium");
+
+        return (
+          <div className="relative rounded-2xl overflow-hidden ring-2 ring-brand-500 shadow-lg shadow-brand-500/10">
+            {/* Gradient header */}
+            <div className="bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-5 text-white">
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2.5 py-0.5 rounded-full">
+                      <Check size={10} /> {t.packs.activePack}
+                    </span>
+                    {isPremium && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest bg-amber-400/30 text-amber-100 px-2.5 py-0.5 rounded-full">
+                        <Star size={10} fill="currentColor" /> Premium
+                      </span>
+                    )}
+                  </div>
+                  <h2 className="text-lg font-bold">{activePack.packType.name}</h2>
+                  <p className="text-white/60 text-xs mt-0.5">
+                    {t.packs.expires}{" "}
+                    {activePack.expiresAt
+                      ? format(new Date(activePack.expiresAt), "d MMM yyyy", { locale: dateLocale })
+                      : "-"}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-4xl font-black leading-none">{activePack.sessionsRemaining}</p>
+                  <p className="text-xs text-white/60 mt-1">{t.packs.sessionsRemaining}</p>
+                </div>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold text-brand-600">
-                {activePack.sessionsRemaining}
-              </p>
-              <p className="text-xs text-ink-tertiary">{t.packs.sessionsRemaining}</p>
+
+            {/* Progress body */}
+            <div className="bg-surface px-6 py-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-ink-tertiary">
+                  {activePack.sessionsUsed} / {activePack.sessionsTotal} {t.packs.sessionsUsed}
+                </span>
+                <span className="text-xs font-semibold text-brand-600">{pct}%</span>
+              </div>
+              <div className="h-2.5 rounded-full bg-brand-100 overflow-hidden">
+                <div
+                  className="bg-gradient-to-r from-brand-500 to-brand-600 h-full rounded-full transition-all duration-700"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
             </div>
           </div>
-          <div className="h-2 rounded-full bg-brand-100 overflow-hidden">
-            <div
-              className="bg-brand-600 h-2 rounded-full transition-all duration-500"
-              style={{
-                width: `${(activePack.sessionsUsed / activePack.sessionsTotal) * 100}%`,
-              }}
-            />
-          </div>
-          <div className="flex justify-between mt-2 text-xs text-ink-tertiary">
-            <span>{activePack.sessionsUsed} {t.packs.sessionsUsed}</span>
-            <span>
-              {t.packs.expires}{" "}
-              {activePack.expiresAt
-                ? format(new Date(activePack.expiresAt), "d MMM yyyy", { locale: dateLocale })
-                : "-"}
-            </span>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Buy a pack */}
       <div>
