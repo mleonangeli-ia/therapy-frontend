@@ -5,7 +5,7 @@ import axios from "axios";
 import { Pack, PackType } from "@/types";
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
-import { Check, Loader2, FlaskConical, ShoppingCart, AlertCircle } from "lucide-react";
+import { Check, Loader2, FlaskConical, ShoppingCart, AlertCircle, Star } from "lucide-react";
 import { useState } from "react";
 import { useT } from "@/lib/i18n";
 import { useCurrency, formatPrice } from "@/hooks/useCurrency";
@@ -140,53 +140,70 @@ export default function PacksPage() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {packTypes?.map((pt) => (
-              <div key={pt.id} className="card hover:shadow-card-hover transition-shadow">
-                <div className="flex items-start justify-between gap-6">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-ink">{pt.name}</h3>
-                    <p className="text-sm text-ink-tertiary mt-0.5">{pt.description}</p>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
-                      {[
-                        `${pt.sessionCount} ${t.packs.sessions}`,
-                        `${pt.validityDays} ${t.packs.validityDays}`,
-                        t.packs.reportPerSession,
-                      ].map((feat) => (
-                        <span key={feat} className="flex items-center gap-1 text-xs text-ink-secondary">
-                          <Check size={12} className="text-emerald-500" />
-                          {feat}
-                        </span>
-                      ))}
+            {packTypes?.map((pt) => {
+              const isPremium = pt.name.toLowerCase().includes("premium");
+              const features = [
+                `${pt.sessionCount} ${t.packs.sessions}`,
+                `${pt.validityDays} ${t.packs.validityDays}`,
+                t.packs.reportPerSession,
+              ];
+              if (isPremium) {
+                features.push(lang === "es" ? "Cierre con psicólogo" : "Closing with psychologist");
+                features.push(lang === "es" ? "Reporte integrador profesional" : "Professional integrating report");
+              }
+
+              return (
+                <div key={pt.id} className={`card hover:shadow-card-hover transition-shadow ${
+                  isPremium ? "ring-2 ring-brand-500 border-brand-300 relative overflow-hidden" : ""
+                }`}>
+                  {isPremium && (
+                    <div className="absolute top-0 right-0 bg-brand-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl flex items-center gap-1">
+                      <Star size={10} fill="currentColor" />
+                      {lang === "es" ? "Recomendado" : "Recommended"}
+                    </div>
+                  )}
+                  <div className="flex items-start justify-between gap-6">
+                    <div className="flex-1 min-w-0">
+                      <h3 className={`font-semibold ${isPremium ? "text-brand-700" : "text-ink"}`}>{pt.name}</h3>
+                      <p className="text-sm text-ink-tertiary mt-0.5">{pt.description}</p>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
+                        {features.map((feat) => (
+                          <span key={feat} className="flex items-center gap-1 text-xs text-ink-secondary">
+                            <Check size={12} className={isPremium ? "text-brand-500" : "text-emerald-500"} />
+                            {feat}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="text-right flex-shrink-0">
+                      <p className={`text-2xl font-bold ${isPremium ? "text-brand-600" : "text-ink"}`}>
+                        {currency.loading ? (
+                          <span className="inline-block w-20 h-7 bg-surface-muted rounded animate-pulse" />
+                        ) : (
+                          formatPrice(pt.priceAmount, currency)
+                        )}
+                      </p>
+                      <p className="text-xs text-ink-disabled">{currency.loading ? "" : currency.currency}</p>
+                      <button
+                        onClick={() => mockPurchase.mutate(pt.id)}
+                        disabled={mockPurchase.isPending}
+                        className="btn btn-primary btn-sm mt-3 w-full"
+                      >
+                        {mockPurchase.isPending && mockPurchase.variables === pt.id ? (
+                          <Loader2 size={13} className="animate-spin" />
+                        ) : (
+                          <>
+                            <ShoppingCart size={13} />
+                            {t.packs.mockPurchase}
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
-
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-2xl font-bold text-ink">
-                      {currency.loading ? (
-                        <span className="inline-block w-20 h-7 bg-surface-muted rounded animate-pulse" />
-                      ) : (
-                        formatPrice(pt.priceAmount, currency)
-                      )}
-                    </p>
-                    <p className="text-xs text-ink-disabled">{currency.loading ? "" : currency.currency}</p>
-                    <button
-                      onClick={() => mockPurchase.mutate(pt.id)}
-                      disabled={mockPurchase.isPending}
-                      className="btn btn-primary btn-sm mt-3 w-full"
-                    >
-                      {mockPurchase.isPending && mockPurchase.variables === pt.id ? (
-                        <Loader2 size={13} className="animate-spin" />
-                      ) : (
-                        <>
-                          <ShoppingCart size={13} />
-                          {t.packs.mockPurchase}
-                        </>
-                      )}
-                    </button>
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
