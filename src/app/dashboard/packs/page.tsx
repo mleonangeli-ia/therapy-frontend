@@ -1,12 +1,11 @@
 "use client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import axios from "axios";
-import { Pack, PackType } from "@/types";
-import { format } from "date-fns";
+import { Pack, PackType, Appointment } from "@/types";
+import { format, addDays, startOfDay, setHours, setMinutes } from "date-fns";
 import { es, enUS } from "date-fns/locale";
-import { Check, Loader2, FlaskConical, ShoppingCart, AlertCircle, Star, UserCheck, Brain, RefreshCw, Package } from "lucide-react";
-import { useState } from "react";
+import { Check, Loader2, FlaskConical, ShoppingCart, AlertCircle, Star, UserCheck, Brain, RefreshCw, Package, CalendarDays, Clock, X, CalendarCheck } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useT } from "@/lib/i18n";
 import { useCurrency, formatPrice } from "@/hooks/useCurrency";
 
@@ -18,12 +17,252 @@ function packTier(name: string): "acompanamiento" | "integral" | "profesional" |
   return "other";
 }
 
+const AVAILABLE_HOURS = [9, 10, 11, 14, 15, 16, 17, 18, 19];
+
+function ScheduleSection({ packId, lang, t, dateLocale, autoOpen = false }: {
+  packId: string; lang: string; t: any; dateLocale: any; autoOpen?: boolean;
+}) {
+  const queryClient = useQueryClient();
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedHour, setSelectedHour] = useState<number | null>(null);
+  const [notes, setNotes] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (autoOpen) {
+      setShowForm(true);
+      setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
+    }
+  }, [autoOpen]);
+
+  const { data: appointments } = useQuery<Appointment[]>({
+    queryKey: ["appointments"],
+    queryFn: () => api.get("/appointments").then((r) => r.data),
+  });
+
+  const createAppt = useMutation({
+    mutationFn: (body: { packId: string; scheduledAt: string; notes?: string }) =>
+      api.post<Appointment>("/appointments", body).then((r) => r.data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["appointments"] });
+      setShowForm(false);
+      setSelectedDate(null);
+      setSelectedHour(null);
+      setNotes("");
+      setSuccessMsg(t.appointments.successMsg);
+      setTimeout(() => setSuccessMsg(null), 5000);
+    },
+  });
+
+  const cancelAppt = useMutation({
+    mutationFn: (id: string) =>
+      api.patch<Appointment>(`/appointments/${id}/cancel`).then((r) => r.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["appointments"] }),
+  });
+
+  const next7Days = Array.from({ length: 7 }, (_, i) => addDays(startOfDay(new Date()), i + 1));
+
+  const handleSchedule = () => {
+    if (!selectedDate || selectedHour === null) return;
+    const dt = setMinutes(setHours(selectedDate, selectedHour), 0);
+    createAppt.mutate({
+      packId,
+      scheduledAt: dt.toISOString(),
+      notes: notes.trim() || undefined,
+    });
+  };
+
+  const upcomingAppts = (appointments ?? []).filter(
+    (a) => a.status !== "CANCELLED" && new Date(a.scheduledAt) > new Date()
+  );
+
+  const statusColor: Record<string, string> = {
+    PENDING: "badge-yellow",
+    CONFIRMED: "badge-green",
+    CANCELLED: "badge-gray",
+    COMPLETED: "badge-blue",
+  };
+
+  const statusLabel: Record<string, string> = {
+    PENDING: t.appointments.pending,
+    CONFIRMED: t.appointments.confirmed,
+    CANCELLED: t.appointments.cancelled,
+    COMPLETED: t.appointments.completed,
+  };
+
+  return (
+    <div ref={sectionRef} className="space-y-4">
+      {successMsg && (
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+          <CalendarCheck size={16} className="text-emerald-600 flex-shrink-0" />
+          <p className="text-sm font-medium text-emerald-800">{successMsg}</p>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <h2 className="section-heading flex items-center gap-2">
+          <CalendarDays size={16} />
+          {t.appointments.title}
+        </h2>
+        {!showForm && (
+          <button onClick={() => setShowForm(true)} className="btn btn-primary btn-sm">
+            <CalendarDays size={13} />
+            {t.appointments.schedule}
+          </button>
+        )}
+      </div>
+
+      {/* Scheduling form */}
+      {showForm && (
+        <div className="card space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-ink">{t.appointments.selectDate}</h3>
+            <button onClick={() => setShowForm(false)} className="text-ink-tertiary hover:text-ink">
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Day picker */}
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {next7Days.map((day) => {
+              const isSelected = selectedDate?.toDateString() === day.toDateString();
+              return (
+                <button
+                  key={day.toISOString()}
+                  onClick={() => { setSelectedDate(day); setSelectedHour(null); }}
+                  className={`flex flex-col items-center px-3 py-2 rounded-xl border text-xs font-medium transition-all min-w-[64px] ${
+                    isSelected
+                      ? "bg-brand-600 text-white border-brand-600"
+                      : "bg-surface border-line text-ink-secondary hover:border-brand-300"
+                  }`}
+                >
+                  <span className="uppercase text-[10px] font-bold opacity-70">
+                    {format(day, "EEE", { locale: dateLocale })}
+                  </span>
+                  <span className="text-lg font-bold">{format(day, "d")}</span>
+                  <span className="text-[10px] opacity-60">
+                    {format(day, "MMM", { locale: dateLocale })}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Hour picker */}
+          {selectedDate && (
+            <div>
+              <p className="text-xs text-ink-tertiary mb-2 flex items-center gap-1">
+                <Clock size={12} />
+                {format(selectedDate, "EEEE d 'de' MMMM", { locale: dateLocale })}
+              </p>
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                {AVAILABLE_HOURS.map((hour) => {
+                  const isSelected = selectedHour === hour;
+                  return (
+                    <button
+                      key={hour}
+                      onClick={() => setSelectedHour(hour)}
+                      className={`py-2 rounded-lg border text-sm font-medium transition-all ${
+                        isSelected
+                          ? "bg-brand-600 text-white border-brand-600"
+                          : "bg-surface border-line text-ink-secondary hover:border-brand-300"
+                      }`}
+                    >
+                      {`${hour.toString().padStart(2, "0")}:00`}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Notes */}
+          {selectedHour !== null && (
+            <div>
+              <label className="text-xs text-ink-tertiary mb-1 block">{t.appointments.notes}</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t.appointments.notesPlaceholder}
+                rows={2}
+                className="input w-full text-sm"
+              />
+            </div>
+          )}
+
+          {/* Confirm */}
+          {selectedDate && selectedHour !== null && (
+            <button
+              onClick={handleSchedule}
+              disabled={createAppt.isPending}
+              className="btn btn-primary w-full"
+            >
+              {createAppt.isPending ? (
+                <Loader2 size={14} className="animate-spin" />
+              ) : (
+                <>
+                  <CalendarCheck size={14} />
+                  {t.appointments.schedule} — {format(selectedDate, "EEE d MMM", { locale: dateLocale })} {selectedHour}:00hs
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Upcoming appointments */}
+      {upcomingAppts.length > 0 ? (
+        <div className="card p-0 divide-y divide-line">
+          {upcomingAppts.map((appt) => (
+            <div key={appt.id} className="flex items-center justify-between px-5 py-4">
+              <div>
+                <p className="text-sm font-medium text-ink">
+                  {format(new Date(appt.scheduledAt), "EEEE d 'de' MMMM · HH:mm'hs'", { locale: dateLocale })}
+                </p>
+                <p className="text-xs text-ink-tertiary mt-0.5">
+                  {t.appointments.with} {appt.therapistName} · {appt.durationMinutes} {t.appointments.duration}
+                </p>
+                {appt.notes && (
+                  <p className="text-xs text-ink-disabled mt-0.5 italic">{appt.notes}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`badge ${statusColor[appt.status]}`}>
+                  {statusLabel[appt.status]}
+                </span>
+                {appt.status !== "CANCELLED" && appt.status !== "COMPLETED" && (
+                  <button
+                    onClick={() => cancelAppt.mutate(appt.id)}
+                    disabled={cancelAppt.isPending}
+                    className="text-xs text-red-500 hover:text-red-700 font-medium"
+                  >
+                    {cancelAppt.isPending ? "..." : t.appointments.cancel}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : !showForm ? (
+        <div className="card text-center py-6">
+          <CalendarDays size={28} className="mx-auto text-ink-disabled mb-2" />
+          <p className="text-sm text-ink-tertiary">{t.appointments.empty}</p>
+          <p className="text-xs text-ink-disabled mt-0.5">{t.appointments.emptyDesc}</p>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function PacksPage() {
   const queryClient = useQueryClient();
   const { t, lang } = useT();
   const dateLocale = lang === "en" ? enUS : es;
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [promptSchedule, setPromptSchedule] = useState(false);
 
   const { data: packTypes, isLoading: loadingTypes } = useQuery<PackType[]>({
     queryKey: ["pack-types"],
@@ -50,9 +289,16 @@ export default function PacksPage() {
       queryClient.invalidateQueries({ queryKey: ["packs"] });
       queryClient.invalidateQueries({ queryKey: ["active-pack"] });
       setTimeout(() => setSuccessMsg(null), 5000);
+
+      // Auto-open scheduling for therapist packs
+      if (pt) {
+        const tier = packTier(pt.name);
+        if (tier === "integral" || tier === "profesional") {
+          setPromptSchedule(true);
+        }
+      }
     },
-    onError: (error: unknown) => {
-      if (axios.isAxiosError(error) && error.response?.status === 401) return;
+    onError: () => {
       setErrorMsg(t.packs.errorActivate);
       setTimeout(() => setErrorMsg(null), 5000);
     },
@@ -291,6 +537,11 @@ export default function PacksPage() {
           </div>
         )}
       </div>
+
+      {/* ── Schedule appointment (only for Integral / Profesional packs) ── */}
+      {activePack && (packTier(activePack.packType.name) === "integral" || packTier(activePack.packType.name) === "profesional") && (
+        <ScheduleSection packId={activePack.id} lang={lang} t={t} dateLocale={dateLocale} autoOpen={promptSchedule} />
+      )}
 
       {/* History */}
       {myPacks && myPacks.length > 0 && (

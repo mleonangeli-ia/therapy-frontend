@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -10,6 +10,7 @@ import {
   CheckCircle, PlayCircle, Clock, AlertTriangle, FileText,
   ChevronDown, ChevronUp, MessageSquare, BarChart3, TrendingUp,
   MessageCircle, ShieldAlert, Globe, Activity, ClipboardList,
+  CalendarDays, CalendarCheck, X as XIcon,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -299,6 +300,139 @@ function CountriesPanel() {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+interface Appointment {
+  id: string;
+  packId: string;
+  packName: string;
+  patientId: string;
+  patientName: string;
+  patientEmail: string;
+  therapistId: string;
+  therapistName: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+  notes?: string;
+  createdAt: string;
+}
+
+function AppointmentsPanel() {
+  const queryClient = useQueryClient();
+
+  const { data: appointments, isLoading, isError } = useQuery<Appointment[]>({
+    queryKey: ["therapist", "appointments"],
+    queryFn: () => therapistApi().get("/therapist/portal/appointments").then(r => r.data),
+    refetchInterval: 30_000,
+    retry: 1,
+  });
+
+  const confirmAppt = useMutation({
+    mutationFn: (id: string) =>
+      therapistApi().patch(`/therapist/portal/appointments/${id}/confirm`).then(r => r.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["therapist", "appointments"] }),
+  });
+
+  const cancelAppt = useMutation({
+    mutationFn: (id: string) =>
+      therapistApi().patch(`/appointments/${id}/cancel`).then(r => r.data),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["therapist", "appointments"] }),
+  });
+
+  const activeAppts = (appointments ?? []).filter(a => a.status !== "CANCELLED" && a.status !== "COMPLETED");
+
+  const statusStyles: Record<string, string> = {
+    PENDING: "text-amber-700 bg-amber-50",
+    CONFIRMED: "text-green-700 bg-green-50",
+    CANCELLED: "text-gray-500 bg-gray-100",
+    COMPLETED: "text-blue-700 bg-blue-50",
+  };
+  const statusLabels: Record<string, string> = {
+    PENDING: "Pendiente",
+    CONFIRMED: "Confirmado",
+    CANCELLED: "Cancelado",
+    COMPLETED: "Completada",
+  };
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
+      <div className="flex items-center gap-2">
+        <CalendarDays size={15} className="text-blue-600" />
+        <h2 className="text-sm font-semibold text-gray-800">Turnos agendados</h2>
+        <span className="ml-auto text-xs text-gray-400">
+          {isLoading ? "…" : `${activeAppts.length} activos`}
+        </span>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-4">
+          <Loader2 size={18} className="animate-spin text-gray-300" />
+        </div>
+      ) : isError ? (
+        <p className="text-xs text-red-400 text-center py-3">Error al cargar turnos. Reiniciá el backend con la migración V11.</p>
+      ) : activeAppts.length === 0 ? (
+        <div className="text-center py-4">
+          <CalendarDays size={24} className="mx-auto text-gray-200 mb-2" />
+          <p className="text-xs text-gray-400">No hay turnos pendientes</p>
+          <p className="text-[10px] text-gray-300 mt-0.5">Los pacientes pueden agendar desde sus packs Integral o Profesional</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {activeAppts.map((appt) => (
+            <div key={appt.id} className="border border-gray-200 rounded-xl p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-900">
+                    {appt.patientName}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">{appt.patientEmail}</p>
+                  <p className="text-xs text-gray-600 mt-1.5 flex items-center gap-1.5">
+                    <CalendarDays size={11} />
+                    {format(new Date(appt.scheduledAt), "EEEE d 'de' MMMM · HH:mm'hs'", { locale: es })}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
+                    <Clock size={11} />
+                    {appt.durationMinutes} min · {appt.packName}
+                  </p>
+                  {appt.notes && (
+                    <p className="text-xs text-gray-500 mt-1.5 italic bg-gray-50 rounded-lg px-2 py-1">
+                      {appt.notes}
+                    </p>
+                  )}
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <span className={clsx("text-[10px] px-2 py-0.5 rounded-full font-medium", statusStyles[appt.status])}>
+                    {statusLabels[appt.status]}
+                  </span>
+                  <div className="flex gap-1.5">
+                    {appt.status === "PENDING" && (
+                      <button
+                        onClick={() => confirmAppt.mutate(appt.id)}
+                        disabled={confirmAppt.isPending}
+                        className="flex items-center gap-1 text-[11px] font-medium text-green-700 bg-green-50 hover:bg-green-100 px-2.5 py-1 rounded-lg transition-colors"
+                      >
+                        <CalendarCheck size={11} /> Confirmar
+                      </button>
+                    )}
+                    {appt.status !== "CANCELLED" && (
+                      <button
+                        onClick={() => cancelAppt.mutate(appt.id)}
+                        disabled={cancelAppt.isPending}
+                        className="flex items-center gap-1 text-[11px] font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-colors"
+                      >
+                        <XIcon size={11} /> Cancelar
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -639,6 +773,7 @@ export default function TherapistPortalPage() {
         ) : (
           <div className="space-y-5">
             <StatsPanel />
+            <AppointmentsPanel />
             <TrafficPanel />
             <CountriesPanel />
 

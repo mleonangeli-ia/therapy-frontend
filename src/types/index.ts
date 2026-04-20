@@ -77,3 +77,19 @@ export interface SessionReport {
   downloadCount: number;
   errorMessage?: string;
 }
+
+export interface Appointment {
+  id: string;
+  packId: string;
+  packName: string;
+  patientId: string;
+  patientName: string;
+  patientEmail: string;
+  therapistId: string;
+  therapistName: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
+  notes?: string;
+  createdAt: string;
+}
