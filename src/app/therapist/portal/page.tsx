@@ -1,8 +1,10 @@
 "use client";
+import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { addDays, startOfDay, setHours, setMinutes } from "date-fns";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
@@ -10,7 +12,7 @@ import {
   CheckCircle, PlayCircle, Clock, AlertTriangle, FileText,
   ChevronDown, ChevronUp, MessageSquare, BarChart3, TrendingUp,
   MessageCircle, ShieldAlert, Globe, Activity, ClipboardList,
-  CalendarDays, CalendarCheck, X as XIcon,
+  CalendarDays, CalendarCheck, X as XIcon, Pencil,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -434,6 +436,170 @@ function UnassignedAppointmentCard({ appt, therapists, onAssign, onReject, isPen
   );
 }
 
+const EDIT_HOURS = [9, 10, 11, 14, 15, 16, 17, 18, 19];
+
+function EditAppointmentModal({ appt, therapists, onClose, onSave, isSaving }: {
+  appt: Appointment;
+  therapists: TherapistOption[];
+  onClose: () => void;
+  onSave: (data: Record<string, unknown>) => void;
+  isSaving: boolean;
+}) {
+  const currentDate = new Date(appt.scheduledAt);
+  const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(currentDate));
+  const [selectedHour, setSelectedHour] = useState<number>(currentDate.getHours());
+  const [duration, setDuration] = useState(appt.durationMinutes);
+  const [notes, setNotes] = useState(appt.notes || "");
+  const [therapistId, setTherapistId] = useState(appt.therapistId || "");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => { setMounted(true); }, []);
+
+  const next14Days = Array.from({ length: 14 }, (_, i) => addDays(startOfDay(new Date()), i));
+
+  const handleSave = () => {
+    const dt = setMinutes(setHours(selectedDate, selectedHour), 0);
+    const data: Record<string, unknown> = {
+      scheduledAt: dt.toISOString(),
+      durationMinutes: duration,
+      notes: notes.trim() || null,
+    };
+    if (therapistId) data.therapistId = therapistId;
+    onSave(data);
+  };
+
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <h3 className="font-bold text-gray-900">Modificar turno</h3>
+            <p className="text-xs text-gray-400 mt-0.5">{appt.patientName} · {appt.packName}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+            <XIcon size={18} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* Day picker */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Día</p>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {next14Days.map((day) => {
+                const isSelected = selectedDate.toDateString() === day.toDateString();
+                return (
+                  <button
+                    key={day.toISOString()}
+                    onClick={() => setSelectedDate(day)}
+                    className={`flex flex-col items-center px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all min-w-[52px] ${
+                      isSelected
+                        ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                        : "bg-white border-gray-200 text-gray-600 hover:border-blue-300"
+                    }`}
+                  >
+                    <span className="uppercase text-[9px] font-bold opacity-70">
+                      {format(day, "EEE", { locale: es })}
+                    </span>
+                    <span className="text-base font-bold">{format(day, "d")}</span>
+                    <span className="text-[9px] opacity-60">{format(day, "MMM", { locale: es })}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Hour picker */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Horario</p>
+            <div className="grid grid-cols-3 gap-2">
+              {EDIT_HOURS.map((hour) => (
+                <button
+                  key={hour}
+                  onClick={() => setSelectedHour(hour)}
+                  className={`py-2 rounded-xl border text-sm font-medium transition-all ${
+                    selectedHour === hour
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                      : "bg-white border-gray-200 text-gray-600 hover:border-blue-300"
+                  }`}
+                >
+                  {`${hour.toString().padStart(2, "0")}:00`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Duration */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Duración (minutos)</p>
+            <div className="flex gap-2">
+              {[30, 45, 50, 60].map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDuration(d)}
+                  className={`flex-1 py-2 rounded-xl border text-sm font-medium transition-all ${
+                    duration === d
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white border-gray-200 text-gray-600 hover:border-blue-300"
+                  }`}
+                >
+                  {d} min
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Therapist */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Profesional asignado</p>
+            <select
+              value={therapistId}
+              onChange={(e) => setTherapistId(e.target.value)}
+              className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300"
+            >
+              <option value="">Sin asignar</option>
+              {therapists.map((t) => (
+                <option key={t.id} value={t.id}>{t.fullName} ({t.licenseNumber})</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Notas</p>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+              placeholder="Notas sobre el turno..."
+            />
+          </div>
+
+          {/* Save */}
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+          >
+            {isSaving ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <>
+                <CalendarCheck size={16} />
+                Guardar cambios — {format(setMinutes(setHours(selectedDate, selectedHour), 0), "EEE d MMM", { locale: es })} {selectedHour}:00hs
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
 function AppointmentsPanel() {
   const queryClient = useQueryClient();
 
@@ -472,11 +638,19 @@ function AppointmentsPanel() {
     onSuccess: invalidateAll,
   });
 
+  const updateAppt = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
+      therapistApi().patch(`/therapist/portal/appointments/${id}`, data).then(r => r.data),
+    onSuccess: invalidateAll,
+  });
+
   const cancelAppt = useMutation({
     mutationFn: (id: string) =>
       therapistApi().patch(`/appointments/${id}/cancel`).then(r => r.data),
     onSuccess: invalidateAll,
   });
+
+  const [editingAppt, setEditingAppt] = useState<Appointment | null>(null);
 
   const isLoading = loadingMine || loadingUnassigned;
   const activeAppts = (myAppts ?? []).filter(a => a.status !== "CANCELLED" && a.status !== "COMPLETED");
@@ -540,18 +714,41 @@ function AppointmentsPanel() {
           <div className="space-y-2">
             {activeAppts.map((appt) => (
               <AppointmentCard key={appt.id} appt={appt} actions={
-                <button
-                  onClick={() => cancelAppt.mutate(appt.id)}
-                  disabled={cancelAppt.isPending}
-                  className="flex items-center gap-1 text-[11px] font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-colors"
-                >
-                  <XIcon size={11} /> Cancelar
-                </button>
+                <>
+                  <button
+                    onClick={() => setEditingAppt(appt)}
+                    className="flex items-center gap-1 text-[11px] font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors"
+                  >
+                    <Pencil size={11} /> Modificar
+                  </button>
+                  <button
+                    onClick={() => cancelAppt.mutate(appt.id)}
+                    disabled={cancelAppt.isPending}
+                    className="flex items-center gap-1 text-[11px] font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-colors"
+                  >
+                    <XIcon size={11} /> Cancelar
+                  </button>
+                </>
               } />
             ))}
           </div>
         )}
       </div>
+
+      {/* Edit modal */}
+      {editingAppt && (
+        <EditAppointmentModal
+          appt={editingAppt}
+          therapists={therapists ?? []}
+          onClose={() => setEditingAppt(null)}
+          onSave={(data) => {
+            updateAppt.mutate({ id: editingAppt.id, data }, {
+              onSuccess: () => setEditingAppt(null),
+            });
+          }}
+          isSaving={updateAppt.isPending}
+        />
+      )}
     </div>
   );
 }
