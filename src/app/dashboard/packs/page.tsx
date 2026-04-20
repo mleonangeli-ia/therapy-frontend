@@ -406,7 +406,9 @@ function ScheduleSection({ packId, lang, t, dateLocale, autoOpen = false }: {
                   {format(new Date(appt.scheduledAt), "EEEE d 'de' MMMM · HH:mm'hs'", { locale: dateLocale })}
                 </p>
                 <p className="text-xs text-ink-tertiary mt-0.5">
-                  {t.appointments.with} {appt.therapistName} · {appt.durationMinutes} {t.appointments.duration}
+                  {appt.therapistName
+                    ? `${t.appointments.with} ${appt.therapistName}`
+                    : (lang === "es" ? "Esperando profesional" : "Awaiting therapist")} · {appt.durationMinutes} {t.appointments.duration}
                 </p>
                 {appt.notes && (
                   <p className="text-xs text-ink-disabled mt-0.5 italic">{appt.notes}</p>
