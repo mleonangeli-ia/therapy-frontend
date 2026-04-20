@@ -19,6 +19,185 @@ function packTier(name: string): "acompanamiento" | "integral" | "profesional" |
 
 const AVAILABLE_HOURS = [9, 10, 11, 14, 15, 16, 17, 18, 19];
 
+function ScheduleModal({ packTypeId, lang, t, dateLocale, onClose, onComplete }: {
+  packTypeId: string; lang: string; t: any; dateLocale: any;
+  onClose: () => void; onComplete: () => void;
+}) {
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedHour, setSelectedHour] = useState<number | null>(null);
+  const [notes, setNotes] = useState("");
+  const [step, setStep] = useState<"schedule" | "purchasing" | "done">("schedule");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const next7Days = Array.from({ length: 7 }, (_, i) => addDays(startOfDay(new Date()), i + 1));
+
+  const handleConfirm = async () => {
+    if (!selectedDate || selectedHour === null) return;
+    setStep("purchasing");
+    setErrorMsg(null);
+
+    try {
+      // Step 1: Buy the pack
+      const { data: purchaseData } = await api.post<{ packId: string }>("/payments/mock-purchase", { packTypeId });
+
+      // Step 2: Schedule the appointment
+      const dt = setMinutes(setHours(selectedDate, selectedHour), 0);
+      await api.post("/appointments", {
+        packId: purchaseData.packId,
+        scheduledAt: dt.toISOString(),
+        notes: notes.trim() || undefined,
+      });
+
+      setStep("done");
+      setTimeout(() => onComplete(), 2000);
+    } catch {
+      setErrorMsg(lang === "es" ? "Error al procesar. Intentá de nuevo." : "Error processing. Try again.");
+      setStep("schedule");
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+
+        {step === "done" ? (
+          <div className="p-8 text-center">
+            <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+              <CalendarCheck size={28} className="text-emerald-600" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-1">
+              {lang === "es" ? "¡Turno agendado!" : "Appointment scheduled!"}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {selectedDate && `${format(selectedDate, "EEEE d 'de' MMMM", { locale: dateLocale })} · ${selectedHour}:00hs`}
+            </p>
+          </div>
+        ) : (
+          <>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <h3 className="font-bold text-gray-900">
+                  {lang === "es" ? "Agendá tu primera sesión" : "Schedule your first session"}
+                </h3>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {lang === "es" ? "Elegí día y horario con tu psicólogo" : "Choose a day and time with your psychologist"}
+                </p>
+              </div>
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5">
+              {errorMsg && (
+                <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+                  <AlertCircle size={14} className="text-red-500" />
+                  <p className="text-xs text-red-700">{errorMsg}</p>
+                </div>
+              )}
+
+              {/* Day picker */}
+              <div>
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                  {lang === "es" ? "Día" : "Day"}
+                </p>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {next7Days.map((day) => {
+                    const isSelected = selectedDate?.toDateString() === day.toDateString();
+                    return (
+                      <button
+                        key={day.toISOString()}
+                        onClick={() => { setSelectedDate(day); setSelectedHour(null); }}
+                        className={`flex flex-col items-center px-3 py-2 rounded-xl border text-xs font-medium transition-all min-w-[60px] ${
+                          isSelected
+                            ? "bg-amber-500 text-white border-amber-500 shadow-md"
+                            : "bg-white border-gray-200 text-gray-600 hover:border-amber-300"
+                        }`}
+                      >
+                        <span className="uppercase text-[10px] font-bold opacity-70">
+                          {format(day, "EEE", { locale: dateLocale })}
+                        </span>
+                        <span className="text-lg font-bold">{format(day, "d")}</span>
+                        <span className="text-[10px] opacity-60">
+                          {format(day, "MMM", { locale: dateLocale })}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Hour picker */}
+              {selectedDate && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    {lang === "es" ? "Horario" : "Time"}
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {AVAILABLE_HOURS.map((hour) => {
+                      const isSelected = selectedHour === hour;
+                      return (
+                        <button
+                          key={hour}
+                          onClick={() => setSelectedHour(hour)}
+                          className={`py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                            isSelected
+                              ? "bg-amber-500 text-white border-amber-500 shadow-md"
+                              : "bg-white border-gray-200 text-gray-600 hover:border-amber-300"
+                          }`}
+                        >
+                          {`${hour.toString().padStart(2, "0")}:00`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Notes */}
+              {selectedHour !== null && (
+                <div>
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                    {t.appointments.notes}
+                  </p>
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder={t.appointments.notesPlaceholder}
+                    rows={2}
+                    className="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-amber-300"
+                  />
+                </div>
+              )}
+
+              {/* Confirm button */}
+              {selectedDate && selectedHour !== null && (
+                <button
+                  onClick={handleConfirm}
+                  disabled={step === "purchasing"}
+                  className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  {step === "purchasing" ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <>
+                      <CalendarCheck size={16} />
+                      {lang === "es"
+                        ? `Comprar y agendar — ${format(selectedDate, "EEE d MMM", { locale: dateLocale })} ${selectedHour}:00hs`
+                        : `Buy & schedule — ${format(selectedDate, "EEE d MMM", { locale: dateLocale })} ${selectedHour}:00`}
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ScheduleSection({ packId, lang, t, dateLocale, autoOpen = false }: {
   packId: string; lang: string; t: any; dateLocale: any; autoOpen?: boolean;
 }) {
@@ -261,7 +440,7 @@ export default function PacksPage() {
   const dateLocale = lang === "en" ? enUS : es;
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [promptSchedule, setPromptSchedule] = useState<string | null>(null); // packId after purchase
+  const [schedulingPackTypeId, setSchedulingPackTypeId] = useState<string | null>(null); // opens modal
 
   const { data: packTypes, isLoading: loadingTypes } = useQuery<PackType[]>({
     queryKey: ["pack-types"],
@@ -288,20 +467,22 @@ export default function PacksPage() {
       queryClient.invalidateQueries({ queryKey: ["packs"] });
       queryClient.invalidateQueries({ queryKey: ["active-pack"] });
       setTimeout(() => setSuccessMsg(null), 5000);
-
-      // Auto-open scheduling for therapist packs
-      if (pt) {
-        const tier = packTier(pt.name);
-        if (tier === "integral" || tier === "profesional") {
-          setPromptSchedule(data.packId);
-        }
-      }
     },
     onError: () => {
       setErrorMsg(t.packs.errorActivate);
       setTimeout(() => setErrorMsg(null), 5000);
     },
   });
+
+  // For therapist packs: buy + schedule in one flow
+  const handleBuyClick = (pt: PackType) => {
+    const tier = packTier(pt.name);
+    if (tier === "integral" || tier === "profesional") {
+      setSchedulingPackTypeId(pt.id); // open scheduling modal
+    } else {
+      mockPurchase.mutate(pt.id); // buy directly
+    }
+  };
 
   const activePack = myPacks?.find((p) => p.status === "ACTIVE");
   const currency = useCurrency();
@@ -355,11 +536,6 @@ export default function PacksPage() {
           <Check size={16} className="text-emerald-600 flex-shrink-0" />
           <p className="text-sm font-medium text-emerald-800">{successMsg}</p>
         </div>
-      )}
-
-      {/* ── Schedule prompt after therapist pack purchase ── */}
-      {promptSchedule && (
-        <ScheduleSection packId={promptSchedule} lang={lang} t={t} dateLocale={dateLocale} autoOpen />
       )}
 
       {/* Error toast */}
@@ -520,7 +696,7 @@ export default function PacksPage() {
                       </p>
                       <p className="text-xs text-ink-disabled">{currency.loading ? "" : currency.currency}</p>
                       <button
-                        onClick={() => mockPurchase.mutate(pt.id)}
+                        onClick={() => handleBuyClick(pt)}
                         disabled={mockPurchase.isPending}
                         className="btn btn-primary btn-sm mt-3 w-full"
                       >
@@ -528,7 +704,9 @@ export default function PacksPage() {
                           <Loader2 size={13} className="animate-spin" />
                         ) : (
                           <>
-                            <ShoppingCart size={13} />
+                            {(packTier(pt.name) === "integral" || packTier(pt.name) === "profesional")
+                              ? <CalendarDays size={13} />
+                              : <ShoppingCart size={13} />}
                             {t.packs.mockPurchase}
                           </>
                         )}
@@ -542,9 +720,26 @@ export default function PacksPage() {
         )}
       </div>
 
-      {/* ── Schedule appointment (only for Integral / Profesional packs, not after purchase) ── */}
-      {!promptSchedule && activePack && (packTier(activePack.packType.name) === "integral" || packTier(activePack.packType.name) === "profesional") && (
+      {/* ── Schedule appointment (only for Integral / Profesional active packs) ── */}
+      {activePack && (packTier(activePack.packType.name) === "integral" || packTier(activePack.packType.name) === "profesional") && (
         <ScheduleSection packId={activePack.id} lang={lang} t={t} dateLocale={dateLocale} />
+      )}
+
+      {/* ── Scheduling modal for therapist pack purchase ── */}
+      {schedulingPackTypeId && (
+        <ScheduleModal
+          packTypeId={schedulingPackTypeId}
+          lang={lang}
+          t={t}
+          dateLocale={dateLocale}
+          onClose={() => setSchedulingPackTypeId(null)}
+          onComplete={() => {
+            setSchedulingPackTypeId(null);
+            queryClient.invalidateQueries({ queryKey: ["packs"] });
+            queryClient.invalidateQueries({ queryKey: ["active-pack"] });
+            queryClient.invalidateQueries({ queryKey: ["appointments"] });
+          }}
+        />
       )}
 
       {/* History */}
