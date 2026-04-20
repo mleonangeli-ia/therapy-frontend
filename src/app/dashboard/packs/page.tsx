@@ -26,14 +26,13 @@ function ScheduleSection({ packId, lang, t, dateLocale, autoOpen = false }: {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedHour, setSelectedHour] = useState<number | null>(null);
   const [notes, setNotes] = useState("");
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(autoOpen);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (autoOpen) {
-      setShowForm(true);
-      setTimeout(() => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
+    if (autoOpen && sectionRef.current) {
+      sectionRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }, [autoOpen]);
 
@@ -262,7 +261,7 @@ export default function PacksPage() {
   const dateLocale = lang === "en" ? enUS : es;
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [promptSchedule, setPromptSchedule] = useState(false);
+  const [promptSchedule, setPromptSchedule] = useState<string | null>(null); // packId after purchase
 
   const { data: packTypes, isLoading: loadingTypes } = useQuery<PackType[]>({
     queryKey: ["pack-types"],
@@ -294,7 +293,7 @@ export default function PacksPage() {
       if (pt) {
         const tier = packTier(pt.name);
         if (tier === "integral" || tier === "profesional") {
-          setPromptSchedule(true);
+          setPromptSchedule(data.packId);
         }
       }
     },
@@ -539,9 +538,11 @@ export default function PacksPage() {
       </div>
 
       {/* ── Schedule appointment (only for Integral / Profesional packs) ── */}
-      {activePack && (packTier(activePack.packType.name) === "integral" || packTier(activePack.packType.name) === "profesional") && (
-        <ScheduleSection packId={activePack.id} lang={lang} t={t} dateLocale={dateLocale} autoOpen={promptSchedule} />
-      )}
+      {promptSchedule ? (
+        <ScheduleSection packId={promptSchedule} lang={lang} t={t} dateLocale={dateLocale} autoOpen />
+      ) : activePack && (packTier(activePack.packType.name) === "integral" || packTier(activePack.packType.name) === "profesional") ? (
+        <ScheduleSection packId={activePack.id} lang={lang} t={t} dateLocale={dateLocale} />
+      ) : null}
 
       {/* History */}
       {myPacks && myPacks.length > 0 && (
