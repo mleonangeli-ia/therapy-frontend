@@ -357,6 +357,11 @@ export default function PacksPage() {
         </div>
       )}
 
+      {/* ── Schedule prompt after therapist pack purchase ── */}
+      {promptSchedule && (
+        <ScheduleSection packId={promptSchedule} lang={lang} t={t} dateLocale={dateLocale} autoOpen />
+      )}
+
       {/* Error toast */}
       {errorMsg && (
         <div className="flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
@@ -537,12 +542,10 @@ export default function PacksPage() {
         )}
       </div>
 
-      {/* ── Schedule appointment (only for Integral / Profesional packs) ── */}
-      {promptSchedule ? (
-        <ScheduleSection packId={promptSchedule} lang={lang} t={t} dateLocale={dateLocale} autoOpen />
-      ) : activePack && (packTier(activePack.packType.name) === "integral" || packTier(activePack.packType.name) === "profesional") ? (
+      {/* ── Schedule appointment (only for Integral / Profesional packs, not after purchase) ── */}
+      {!promptSchedule && activePack && (packTier(activePack.packType.name) === "integral" || packTier(activePack.packType.name) === "profesional") && (
         <ScheduleSection packId={activePack.id} lang={lang} t={t} dateLocale={dateLocale} />
-      ) : null}
+      )}
 
       {/* History */}
       {myPacks && myPacks.length > 0 && (
