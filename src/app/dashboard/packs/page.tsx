@@ -5,10 +5,18 @@ import axios from "axios";
 import { Pack, PackType } from "@/types";
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
-import { Check, Loader2, FlaskConical, ShoppingCart, AlertCircle, Star } from "lucide-react";
+import { Check, Loader2, FlaskConical, ShoppingCart, AlertCircle, Star, UserCheck, Brain, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { useT } from "@/lib/i18n";
 import { useCurrency, formatPrice } from "@/hooks/useCurrency";
+
+function packTier(name: string): "acompanamiento" | "integral" | "profesional" | "other" {
+  const n = name.toLowerCase();
+  if (n.includes("acompañamiento") || n.includes("acompanamiento")) return "acompanamiento";
+  if (n.includes("integral")) return "integral";
+  if (n.includes("profesional")) return "profesional";
+  return "other";
+}
 
 export default function PacksPage() {
   const queryClient = useQueryClient();
@@ -97,11 +105,10 @@ export default function PacksPage() {
       {activePack && (() => {
         const pct = activePack.sessionsTotal > 0
           ? Math.round((activePack.sessionsUsed / activePack.sessionsTotal) * 100) : 0;
-        const isPremium = activePack.packType.name.toLowerCase().includes("premium");
+        const tier = packTier(activePack.packType.name);
 
         return (
           <div className="relative rounded-2xl overflow-hidden ring-2 ring-brand-500 shadow-lg shadow-brand-500/10">
-            {/* Gradient header */}
             <div className="bg-gradient-to-r from-brand-600 to-brand-500 px-6 py-5 text-white">
               <div className="flex items-start justify-between">
                 <div>
@@ -109,7 +116,7 @@ export default function PacksPage() {
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2.5 py-0.5 rounded-full">
                       <Check size={10} /> {t.packs.activePack}
                     </span>
-                    {isPremium && (
+                    {tier === "profesional" && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest bg-amber-400/30 text-amber-100 px-2.5 py-0.5 rounded-full">
                         <Star size={10} fill="currentColor" /> Premium
                       </span>
@@ -129,8 +136,6 @@ export default function PacksPage() {
                 </div>
               </div>
             </div>
-
-            {/* Progress body */}
             <div className="bg-surface px-6 py-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-ink-tertiary">
@@ -162,43 +167,82 @@ export default function PacksPage() {
         ) : (
           <div className="grid gap-4">
             {packTypes?.map((pt) => {
-              const isPremium = pt.name.toLowerCase().includes("premium");
-              const features = [
-                `${pt.sessionCount} ${t.packs.sessions}`,
-                `${pt.validityDays} ${t.packs.validityDays}`,
-                t.packs.reportPerSession,
-              ];
-              if (isPremium) {
-                features.push(lang === "es" ? "Cierre con psicólogo" : "Closing with psychologist");
-                features.push(lang === "es" ? "Reporte integrador profesional" : "Professional integrating report");
+              const tier = packTier(pt.name);
+              const isHighlighted = tier === "integral";
+              const isPro = tier === "profesional";
+
+              const features: { label: string; icon: React.ElementType }[] = [];
+
+              if (tier === "acompanamiento") {
+                features.push(
+                  { label: `${pt.sessionCount} ${lang === "es" ? "sesiones con IA" : "AI sessions"}`, icon: Brain },
+                  { label: lang === "es" ? "Revisión de psicólogo por sesión" : "Psychologist review per session", icon: UserCheck },
+                  { label: t.packs.reportPerSession, icon: Check },
+                  { label: lang === "es" ? "Renovable" : "Renewable", icon: RefreshCw },
+                  { label: `${pt.validityDays} ${t.packs.validityDays}`, icon: Check },
+                );
+              } else if (tier === "integral") {
+                features.push(
+                  { label: `${pt.sessionCount} ${lang === "es" ? "sesiones con IA" : "AI sessions"}`, icon: Brain },
+                  { label: lang === "es" ? "Entrevista de cierre con psicólogo" : "Closing interview with psychologist", icon: UserCheck },
+                  { label: lang === "es" ? "Reporte integrador" : "Integrating report", icon: Check },
+                  { label: `${pt.validityDays} ${t.packs.validityDays}`, icon: Check },
+                );
+              } else if (isPro) {
+                features.push(
+                  { label: lang === "es" ? "Entrevista de admisión" : "Admission interview", icon: UserCheck },
+                  { label: `${pt.sessionCount} ${lang === "es" ? "sesiones con psicólogo" : "sessions with psychologist"}`, icon: UserCheck },
+                  { label: lang === "es" ? "Atención 100% humana" : "100% human care", icon: Star },
+                  { label: `${pt.validityDays} ${t.packs.validityDays}`, icon: Check },
+                );
+              } else {
+                features.push(
+                  { label: `${pt.sessionCount} ${t.packs.sessions}`, icon: Check },
+                  { label: `${pt.validityDays} ${t.packs.validityDays}`, icon: Check },
+                  { label: t.packs.reportPerSession, icon: Check },
+                );
               }
 
               return (
                 <div key={pt.id} className={`card hover:shadow-card-hover transition-shadow ${
-                  isPremium ? "ring-2 ring-brand-500 border-brand-300 relative overflow-hidden" : ""
+                  isHighlighted ? "ring-2 ring-brand-500 border-brand-300 relative overflow-hidden"
+                  : isPro ? "ring-2 ring-amber-400 border-amber-200 relative overflow-hidden"
+                  : ""
                 }`}>
-                  {isPremium && (
+                  {isHighlighted && (
                     <div className="absolute top-0 right-0 bg-brand-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl flex items-center gap-1">
                       <Star size={10} fill="currentColor" />
                       {lang === "es" ? "Recomendado" : "Recommended"}
                     </div>
                   )}
+                  {isPro && (
+                    <div className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl flex items-center gap-1">
+                      <UserCheck size={10} />
+                      {lang === "es" ? "100% Humano" : "100% Human"}
+                    </div>
+                  )}
                   <div className="flex items-start justify-between gap-6">
                     <div className="flex-1 min-w-0">
-                      <h3 className={`font-semibold ${isPremium ? "text-brand-700" : "text-ink"}`}>{pt.name}</h3>
+                      <h3 className={`font-semibold ${
+                        isHighlighted ? "text-brand-700" : isPro ? "text-amber-700" : "text-ink"
+                      }`}>{pt.name}</h3>
                       <p className="text-sm text-ink-tertiary mt-0.5">{pt.description}</p>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3">
-                        {features.map((feat) => (
-                          <span key={feat} className="flex items-center gap-1 text-xs text-ink-secondary">
-                            <Check size={12} className={isPremium ? "text-brand-500" : "text-emerald-500"} />
-                            {feat}
+                      <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3">
+                        {features.map(({ label, icon: Icon }) => (
+                          <span key={label} className="flex items-center gap-1 text-xs text-ink-secondary">
+                            <Icon size={12} className={
+                              isHighlighted ? "text-brand-500" : isPro ? "text-amber-500" : "text-emerald-500"
+                            } />
+                            {label}
                           </span>
                         ))}
                       </div>
                     </div>
 
                     <div className="text-right flex-shrink-0">
-                      <p className={`text-2xl font-bold ${isPremium ? "text-brand-600" : "text-ink"}`}>
+                      <p className={`text-2xl font-bold ${
+                        isHighlighted ? "text-brand-600" : isPro ? "text-amber-600" : "text-ink"
+                      }`}>
                         {currency.loading ? (
                           <span className="inline-block w-20 h-7 bg-surface-muted rounded animate-pulse" />
                         ) : (
