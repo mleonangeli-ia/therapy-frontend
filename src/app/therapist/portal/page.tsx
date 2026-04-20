@@ -304,6 +304,12 @@ function CountriesPanel() {
   );
 }
 
+interface TherapistOption {
+  id: string;
+  fullName: string;
+  licenseNumber: string;
+}
+
 interface Appointment {
   id: string;
   packId: string;
@@ -311,8 +317,8 @@ interface Appointment {
   patientId: string;
   patientName: string;
   patientEmail: string;
-  therapistId: string;
-  therapistName: string;
+  therapistId: string | null;
+  therapistName: string | null;
   scheduledAt: string;
   durationMinutes: number;
   status: "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
@@ -366,6 +372,68 @@ function AppointmentCard({ appt, actions }: {
   );
 }
 
+function UnassignedAppointmentCard({ appt, therapists, onAssign, onReject, isPending }: {
+  appt: Appointment;
+  therapists: TherapistOption[];
+  onAssign: (apptId: string, assignTo?: string) => void;
+  onReject: (id: string) => void;
+  isPending: boolean;
+}) {
+  const [selectedTherapist, setSelectedTherapist] = useState<string>("");
+
+  return (
+    <div className="border border-amber-200 bg-white rounded-xl p-4">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-900">{appt.patientName}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{appt.patientEmail}</p>
+          <p className="text-xs text-gray-600 mt-1.5 flex items-center gap-1.5">
+            <CalendarDays size={11} />
+            {format(new Date(appt.scheduledAt), "EEEE d 'de' MMMM · HH:mm'hs'", { locale: es })}
+          </p>
+          <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
+            <Clock size={11} />
+            {appt.durationMinutes} min · {appt.packName}
+          </p>
+          {appt.notes && (
+            <p className="text-xs text-gray-500 mt-1.5 italic bg-gray-50 rounded-lg px-2 py-1">{appt.notes}</p>
+          )}
+        </div>
+        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium text-amber-700 bg-amber-50">
+          Sin asignar
+        </span>
+      </div>
+
+      <div className="mt-3 pt-3 border-t border-amber-100 flex items-center gap-2">
+        <select
+          value={selectedTherapist}
+          onChange={(e) => setSelectedTherapist(e.target.value)}
+          className="flex-1 text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300"
+        >
+          <option value="">Seleccionar profesional...</option>
+          {therapists.map((t) => (
+            <option key={t.id} value={t.id}>{t.fullName} ({t.licenseNumber})</option>
+          ))}
+        </select>
+        <button
+          onClick={() => onAssign(appt.id, selectedTherapist || undefined)}
+          disabled={isPending || !selectedTherapist}
+          className="flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg transition-colors disabled:opacity-40"
+        >
+          <CalendarCheck size={11} /> Asignar
+        </button>
+        <button
+          onClick={() => onReject(appt.id)}
+          disabled={isPending}
+          className="flex items-center gap-1 text-[11px] font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors"
+        >
+          <XIcon size={11} /> Rechazar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function AppointmentsPanel() {
   const queryClient = useQueryClient();
 
@@ -373,6 +441,12 @@ function AppointmentsPanel() {
     queryClient.invalidateQueries({ queryKey: ["therapist", "appointments"] });
     queryClient.invalidateQueries({ queryKey: ["therapist", "unassigned"] });
   };
+
+  // List of therapists for assignment
+  const { data: therapists } = useQuery<TherapistOption[]>({
+    queryKey: ["therapist", "therapists"],
+    queryFn: () => therapistApi().get("/therapist/portal/therapists").then(r => r.data),
+  });
 
   // Appointments already assigned to me
   const { data: myAppts, isLoading: loadingMine } = useQuery<Appointment[]>({
@@ -391,8 +465,10 @@ function AppointmentsPanel() {
   });
 
   const claimAppt = useMutation({
-    mutationFn: (id: string) =>
-      therapistApi().patch(`/therapist/portal/appointments/${id}/claim`).then(r => r.data),
+    mutationFn: ({ apptId, assignTo }: { apptId: string; assignTo?: string }) => {
+      const params = assignTo ? `?assignTo=${assignTo}` : "";
+      return therapistApi().patch(`/therapist/portal/appointments/${apptId}/claim${params}`).then(r => r.data);
+    },
     onSuccess: invalidateAll,
   });
 
@@ -426,24 +502,14 @@ function AppointmentsPanel() {
           ) : (
             <div className="space-y-2">
               {pendingUnassigned.map((appt) => (
-                <AppointmentCard key={appt.id} appt={appt} actions={
-                  <>
-                    <button
-                      onClick={() => claimAppt.mutate(appt.id)}
-                      disabled={claimAppt.isPending}
-                      className="flex items-center gap-1 text-[11px] font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-colors"
-                    >
-                      <CalendarCheck size={11} /> Tomar turno
-                    </button>
-                    <button
-                      onClick={() => cancelAppt.mutate(appt.id)}
-                      disabled={cancelAppt.isPending}
-                      className="flex items-center gap-1 text-[11px] font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-colors"
-                    >
-                      <XIcon size={11} /> Rechazar
-                    </button>
-                  </>
-                } />
+                <UnassignedAppointmentCard
+                  key={appt.id}
+                  appt={appt}
+                  therapists={therapists ?? []}
+                  onAssign={(apptId, assignTo) => claimAppt.mutate({ apptId, assignTo })}
+                  onReject={(id) => cancelAppt.mutate(id)}
+                  isPending={claimAppt.isPending || cancelAppt.isPending}
+                />
               ))}
             </div>
           )}
