@@ -1,4 +1,5 @@
 "use client";
+import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { Pack, PackType, Appointment } from "@/types";
@@ -56,8 +57,8 @@ function ScheduleModal({ packTypeId, lang, t, dateLocale, onClose, onComplete }:
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
 
         {step === "done" ? (
@@ -194,7 +195,8 @@ function ScheduleModal({ packTypeId, lang, t, dateLocale, onClose, onComplete }:
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
