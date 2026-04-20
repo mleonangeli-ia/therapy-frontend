@@ -12,9 +12,9 @@ import { useCurrency, formatPrice } from "@/hooks/useCurrency";
 
 function packTier(name: string): "acompanamiento" | "integral" | "profesional" | "other" {
   const n = name.toLowerCase();
-  if (n.includes("acompañamiento") || n.includes("acompanamiento")) return "acompanamiento";
+  if (n.includes("acompañamiento") || n.includes("acompanamiento") || n.includes("supervisado")) return "acompanamiento";
   if (n.includes("integral")) return "integral";
-  if (n.includes("profesional")) return "profesional";
+  if (n.includes("profesional") || n.includes("personalizado")) return "profesional";
   return "other";
 }
 
@@ -625,29 +625,36 @@ export default function PacksPage() {
               const isPro = tier === "profesional";
 
               const features: { label: string; icon: React.ElementType }[] = [];
+              let whyChoose = "";
 
               if (tier === "acompanamiento") {
                 features.push(
-                  { label: `${pt.sessionCount} ${lang === "es" ? "sesiones con IA" : "AI sessions"}`, icon: Brain },
-                  { label: lang === "es" ? "Revisión de psicólogo por sesión" : "Psychologist review per session", icon: UserCheck },
-                  { label: t.packs.reportPerSession, icon: Check },
-                  { label: lang === "es" ? "Renovable" : "Renewable", icon: RefreshCw },
+                  { label: `${pt.sessionCount} sesiones de 45 min con IA`, icon: Brain },
+                  { label: "Supervisión profesional por sesión", icon: UserCheck },
+                  { label: "Renovable al finalizar", icon: RefreshCw },
                   { label: `${pt.validityDays} ${t.packs.validityDays}`, icon: Check },
                 );
+                whyChoose = lang === "es"
+                  ? "Es una opción ideal para empezar. Tenés la flexibilidad de interactuar con la IA a tu ritmo, pero con la tranquilidad de que cada proceso está supervisado por un profesional. Es accesible, constante y te permite explorar lo que te pasa sin sentirte solo en el proceso."
+                  : "An ideal option to start. You have the flexibility to interact with the AI at your own pace, with the peace of mind that each process is supervised by a professional.";
               } else if (tier === "integral") {
                 features.push(
-                  { label: `${pt.sessionCount} ${lang === "es" ? "sesiones con IA" : "AI sessions"}`, icon: Brain },
-                  { label: lang === "es" ? "Entrevista de cierre con psicólogo" : "Closing interview with psychologist", icon: UserCheck },
-                  { label: lang === "es" ? "Reporte integrador" : "Integrating report", icon: Check },
+                  { label: `${pt.sessionCount} sesiones de 45 min con IA`, icon: Brain },
+                  { label: "Entrevista de cierre con psicólogo", icon: UserCheck },
                   { label: `${pt.validityDays} ${t.packs.validityDays}`, icon: Check },
                 );
+                whyChoose = lang === "es"
+                  ? "Combina lo mejor de ambos mundos: el acompañamiento continuo de la IA y un encuentro final con un profesional para integrar lo trabajado, ordenar ideas y definir próximos pasos. Ideal si buscás un cierre más claro y una devolución clínica personalizada."
+                  : "Combines the best of both worlds: continuous AI support and a final meeting with a professional to integrate the work done and define next steps.";
               } else if (isPro) {
                 features.push(
-                  { label: lang === "es" ? "Entrevista de admisión" : "Admission interview", icon: UserCheck },
-                  { label: `${pt.sessionCount} ${lang === "es" ? "sesiones con psicólogo" : "sessions with psychologist"}`, icon: UserCheck },
-                  { label: lang === "es" ? "Atención 100% humana" : "100% human care", icon: Star },
+                  { label: "Entrevista de admisión", icon: UserCheck },
+                  { label: `${pt.sessionCount} sesiones de 45 min con Lic. en psicología`, icon: UserCheck },
                   { label: `${pt.validityDays} ${t.packs.validityDays}`, icon: Check },
                 );
+                whyChoose = lang === "es"
+                  ? "Es una experiencia terapéutica completa. La mejor opción si buscás profundidad, seguimiento clínico directo y un espacio tradicional de terapia."
+                  : "A complete therapeutic experience. The best option if you seek depth, direct clinical follow-up and a traditional therapy space.";
               } else {
                 features.push(
                   { label: `${pt.sessionCount} ${t.packs.sessions}`, icon: Check },
@@ -671,7 +678,7 @@ export default function PacksPage() {
                   {isPro && (
                     <div className="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-xl flex items-center gap-1">
                       <UserCheck size={10} />
-                      {lang === "es" ? "100% Humano" : "100% Human"}
+                      {lang === "es" ? "Terapia completa" : "Full therapy"}
                     </div>
                   )}
                   <div className="flex items-start justify-between gap-6">
@@ -690,6 +697,9 @@ export default function PacksPage() {
                           </span>
                         ))}
                       </div>
+                      {whyChoose && (
+                        <p className="text-xs text-ink-disabled mt-3 leading-relaxed italic">{whyChoose}</p>
+                      )}
                     </div>
 
                     <div className="text-right flex-shrink-0">
