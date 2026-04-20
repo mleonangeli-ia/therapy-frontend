@@ -5,7 +5,7 @@ import axios from "axios";
 import { Pack, PackType } from "@/types";
 import { format } from "date-fns";
 import { es, enUS } from "date-fns/locale";
-import { Check, Loader2, FlaskConical, ShoppingCart, AlertCircle, Star, UserCheck, Brain, RefreshCw } from "lucide-react";
+import { Check, Loader2, FlaskConical, ShoppingCart, AlertCircle, Star, UserCheck, Brain, RefreshCw, Package } from "lucide-react";
 import { useState } from "react";
 import { useT } from "@/lib/i18n";
 import { useCurrency, formatPrice } from "@/hooks/useCurrency";
@@ -70,12 +70,31 @@ export default function PacksPage() {
     CANCELLED:       t.packs.statusCancelled,
   };
 
+  const hasNoPack = myPacks !== undefined && !myPacks.some((p) => p.status === "ACTIVE");
+
   return (
     <div className="max-w-3xl space-y-6">
       <div>
         <h1 className="page-title">{t.packs.title}</h1>
         <p className="text-ink-tertiary mt-1">{t.packs.subtitle}</p>
       </div>
+
+      {/* No pack — onboarding banner */}
+      {hasNoPack && (
+        <div className="flex items-start gap-3 rounded-xl border border-brand-200 bg-brand-50 px-4 py-3">
+          <Package size={18} className="text-brand-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-brand-800">
+              {lang === "es" ? "Elegí un pack para comenzar" : "Choose a pack to get started"}
+            </p>
+            <p className="text-xs text-brand-700/70 mt-0.5">
+              {lang === "es"
+                ? "Necesitás un pack activo para acceder a tus sesiones, reportes y demás funciones de la plataforma."
+                : "You need an active pack to access your sessions, reports, and other platform features."}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Demo mode banner */}
       <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
