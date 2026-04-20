@@ -29,6 +29,11 @@ function doRefresh(): Promise<string> {
     const { data } = await axios.post(`/api/auth/refresh`, { refreshToken });
     localStorage.setItem("access_token", data.accessToken);
     localStorage.setItem("refresh_token", data.refreshToken);
+    // Update expiry so dashboard layout doesn't force-logout
+    try {
+      const payload = JSON.parse(atob(data.accessToken.split(".")[1]));
+      if (payload.exp) localStorage.setItem("token_expiry", String(payload.exp * 1000));
+    } catch { /* ignore parse errors */ }
     return data.accessToken as string;
   })().finally(() => {
     refreshPromise = null;
