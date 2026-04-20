@@ -9,7 +9,7 @@ import {
   Users, ChevronRight, LogOut, Stethoscope, Loader2,
   CheckCircle, PlayCircle, Clock, AlertTriangle, FileText,
   ChevronDown, ChevronUp, MessageSquare, BarChart3, TrendingUp,
-  MessageCircle, ShieldAlert, Globe, Activity,
+  MessageCircle, ShieldAlert, Globe, Activity, ClipboardList,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -344,8 +344,98 @@ function SessionMessages({ sessionId }: { sessionId: string }) {
   );
 }
 
+interface ClinicalData {
+  sessionSummary?: string;
+  mainTopics?: string[];
+  emotionalState?: string;
+  moodEvolution?: string;
+  cognitivePatternsObserved?: string;
+  therapeuticInterventions?: string;
+  patientStrengths?: string;
+  areasForWork?: string[];
+  progressNotes?: string;
+  recommendationsForProfessional?: string;
+  riskIndicators?: string;
+  followUpSuggestions?: string;
+}
+
+function ClinicalReport({ sessionId }: { sessionId: string }) {
+  const { data, isLoading } = useQuery<ClinicalData>({
+    queryKey: ["therapist", "clinical", sessionId],
+    queryFn: () => therapistApi().get(`/therapist/portal/sessions/${sessionId}/clinical-report`).then(r => r.data),
+    retry: false,
+  });
+
+  if (isLoading) return <div className="flex justify-center py-4"><Loader2 size={16} className="animate-spin text-gray-300" /></div>;
+  if (!data) return <p className="text-xs text-gray-400 py-2 text-center">Sin análisis clínico disponible</p>;
+
+  const sections: { label: string; value: string | undefined }[] = [
+    { label: "Resumen de la sesión", value: data.sessionSummary },
+    { label: "Estado emocional", value: data.emotionalState },
+    { label: "Evolución anímica", value: data.moodEvolution },
+    { label: "Patrones cognitivos", value: data.cognitivePatternsObserved },
+    { label: "Intervenciones terapéuticas", value: data.therapeuticInterventions },
+    { label: "Fortalezas del paciente", value: data.patientStrengths },
+    { label: "Notas de progreso", value: data.progressNotes },
+    { label: "Recomendaciones para el profesional", value: data.recommendationsForProfessional },
+    { label: "Indicadores de riesgo", value: data.riskIndicators },
+    { label: "Sugerencias para próximas sesiones", value: data.followUpSuggestions },
+  ];
+
+  const isRiskSafe = data.riskIndicators?.toLowerCase().includes("ninguno")
+    || data.riskIndicators?.toLowerCase().startsWith("no ");
+
+  return (
+    <div className="space-y-3 py-2">
+      {/* Topics */}
+      {data.mainTopics && data.mainTopics.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Temas principales</p>
+          <div className="flex flex-wrap gap-1.5">
+            {data.mainTopics.map(t => (
+              <span key={t} className="text-[10px] bg-violet-50 text-violet-700 px-2 py-0.5 rounded-full font-medium">{t}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sections */}
+      {sections.map(({ label, value }) => {
+        if (!value) return null;
+        const isRisk = label === "Indicadores de riesgo";
+        return (
+          <div key={label}>
+            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-0.5">{label}</p>
+            <p className={clsx(
+              "text-xs leading-relaxed whitespace-pre-wrap",
+              isRisk && !isRiskSafe ? "text-red-700 bg-red-50 rounded-lg px-2.5 py-1.5 border border-red-100"
+                : isRisk ? "text-emerald-700 bg-emerald-50 rounded-lg px-2.5 py-1.5 border border-emerald-100"
+                : "text-gray-700"
+            )}>
+              {value}
+            </p>
+          </div>
+        );
+      })}
+
+      {/* Areas for work */}
+      {data.areasForWork && data.areasForWork.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Áreas a trabajar</p>
+          <div className="flex flex-wrap gap-1.5">
+            {data.areasForWork.map(a => (
+              <span key={a} className="text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-medium">{a}</span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SessionCard({ session }: { session: Session }) {
   const [expanded, setExpanded] = useState(false);
+  const [tab, setTab] = useState<"transcript" | "clinical">("clinical");
   const isCompleted = session.status === "COMPLETED";
   const isInProgress = session.status === "IN_PROGRESS";
   const moodDelta = session.moodEnd && session.moodStart ? session.moodEnd - session.moodStart : null;
@@ -405,10 +495,33 @@ function SessionCard({ session }: { session: Session }) {
 
       {expanded && (
         <div className="border-t border-gray-100 px-4 pb-4">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mt-3 mb-2 flex items-center gap-1.5">
-            <MessageSquare size={11} /> Transcripción de la sesión
-          </p>
-          <SessionMessages sessionId={session.id} />
+          {/* Tabs */}
+          <div className="flex gap-1 mt-3 mb-3">
+            <button
+              onClick={() => setTab("clinical")}
+              className={clsx(
+                "flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-colors",
+                tab === "clinical" ? "bg-violet-100 text-violet-700" : "text-gray-400 hover:bg-gray-50"
+              )}
+            >
+              <ClipboardList size={11} /> Reporte clínico
+            </button>
+            <button
+              onClick={() => setTab("transcript")}
+              className={clsx(
+                "flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg transition-colors",
+                tab === "transcript" ? "bg-blue-100 text-blue-700" : "text-gray-400 hover:bg-gray-50"
+              )}
+            >
+              <MessageSquare size={11} /> Transcripción
+            </button>
+          </div>
+
+          {tab === "clinical" ? (
+            <ClinicalReport sessionId={session.id} />
+          ) : (
+            <SessionMessages sessionId={session.id} />
+          )}
         </div>
       )}
     </div>
